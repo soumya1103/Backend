@@ -1,26 +1,31 @@
 package com.libraryManagement.backend.mapper;
 
+import com.libraryManagement.backend.dto.IssuancesInDto;
 import com.libraryManagement.backend.dto.IssuancesOutDto;
 import com.libraryManagement.backend.entity.Issuances;
 
 public class IssuancesMapper {
 
-    public static IssuancesOutDto mapToIssuances(IssuancesOutDto issuancesDto, Issuances issuances) {
+    public static IssuancesOutDto mapToIssuancesDto(Issuances issuances) {
 
-        issuancesDto.setIssueDate(issuances.getIssueDate());
-        issuancesDto.setReturnDate(issuances.getReturnDate());
-        issuancesDto.setStatus(issuances.getStatus());
-        issuancesDto.setIssuanceType(issuances.getIssuanceType());
+        IssuancesOutDto issuancesOutDto = new IssuancesOutDto();
+        issuancesOutDto.setIssueDate(issuances.getIssueDate());
+        issuancesOutDto.setReturnDate(issuances.getReturnDate());
+        issuancesOutDto.setStatus(issuances.getStatus());
+        issuancesOutDto.setIssuanceType(issuances.getIssuanceType());
 
-        return issuancesDto;
+        return issuancesOutDto;
     }
 
-    public static Issuances mapToIssuancesDto(Issuances issuances, IssuancesOutDto issuancesDto) {
+    public static Issuances mapToIssuancesEntity(IssuancesInDto issuancesInDto) {
 
-        issuances.setIssueDate(issuancesDto.getIssueDate());
-        issuances.setReturnDate(issuancesDto.getReturnDate());
-        issuances.setStatus(issuancesDto.getStatus());
-        issuances.setIssuanceType(issuancesDto.getIssuanceType());
+        Issuances issuances = new Issuances();
+        issuances.setUserId(issuancesInDto.getUserId());
+        issuances.setBookId(issuancesInDto.getBookId());
+        issuances.setIssueDate(issuancesInDto.getIssueDate());
+        issuances.setReturnDate(issuancesInDto.getReturnDate());
+        issuances.setStatus(issuancesInDto.getStatus());
+        issuances.setIssuanceType(issuancesInDto.getIssuanceType());
 
         return issuances;
     }
