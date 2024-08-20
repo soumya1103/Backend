@@ -31,4 +31,5 @@ public class Books {
 
     @Column(name = "book_img")
     private String bookImg;
+
 }

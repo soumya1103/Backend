@@ -1,9 +1,11 @@
 package com.libraryManagement.backend.entity;
 
+import com.libraryManagement.backend.dto.UsersOutDto;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "issuances")
