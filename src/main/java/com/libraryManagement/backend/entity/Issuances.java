@@ -17,11 +17,9 @@ public class Issuances {
     @Column(name = "issuance_id")
     private int issuanceId;
 
-    @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private Users userId;
 
-    @ManyToOne
     @JoinColumn(name = "book_id", nullable = false)
     private Books bookId;
 

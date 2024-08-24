@@ -13,5 +13,5 @@ public class BooksOutDto {
 
     private int bookCount;
 
-    private String bookImg;
+    private String categoryName;
 }

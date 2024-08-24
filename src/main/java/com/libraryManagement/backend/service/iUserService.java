@@ -19,4 +19,6 @@ public interface iUserService {
     UsersOutDto updateUser(UsersInDto usersInDto);
 
     void deleteById(int id);
+
+    long getUserCount();
 }

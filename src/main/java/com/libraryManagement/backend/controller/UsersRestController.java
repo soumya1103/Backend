@@ -32,6 +32,10 @@ public class UsersRestController {
         return usersOutDto;
     }
 
+    @GetMapping("/users/count")
+    public ResponseEntity<Long> getUserCount() {
+        return ResponseEntity.ok(usersService.getUserCount());
+    }
 
     @PostMapping("/admin")
     public Users addAdmin(@RequestBody Users users){

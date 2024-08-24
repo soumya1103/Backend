@@ -16,6 +16,4 @@ public class BooksInDto {
     private int bookRating;
 
     private int bookCount;
-
-    private String bookImg;
 }

@@ -91,9 +91,6 @@ public class BookServiceImpl implements iBookService {
             booksToUpdate.setBookCount(booksInDto.getBookCount());
         }
 
-        if (booksInDto.getBookImg() != null && !booksInDto.getBookImg().isEmpty()) {
-            booksToUpdate.setBookImg(booksInDto.getBookImg());
-        }
 
         Books updatedBooks = booksRepository.save(booksToUpdate);
 
@@ -102,7 +99,6 @@ public class BookServiceImpl implements iBookService {
         booksOutDto.setBookAuthor(updatedBooks.getBookAuthor());
         booksOutDto.setBookRating(updatedBooks.getBookRating());
         booksOutDto.setBookCount(updatedBooks.getBookCount());
-        booksOutDto.setBookImg(updatedBooks.getBookImg());
 
         return booksOutDto;
     }
@@ -112,6 +108,7 @@ public class BookServiceImpl implements iBookService {
         booksRepository.deleteById(bookId);
 
     }
+
 }
 
 

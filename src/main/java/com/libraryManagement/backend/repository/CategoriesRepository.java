@@ -10,4 +10,6 @@ import java.util.List;
 public interface CategoriesRepository extends JpaRepository<Categories, Integer> {
 
     List<Categories> findByCategoryName(String categoryName);
+
+    long count();
 }

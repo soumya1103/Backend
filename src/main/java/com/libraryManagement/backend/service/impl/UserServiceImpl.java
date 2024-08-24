@@ -89,4 +89,9 @@ public class UserServiceImpl implements iUserService {
     public void deleteById(int id) {
         usersRepository.deleteById(id);
     }
+
+    @Override
+    public long getUserCount() {
+        return usersRepository.count();
+    }
 }

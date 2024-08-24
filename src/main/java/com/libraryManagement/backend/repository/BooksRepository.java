@@ -1,8 +1,6 @@
 package com.libraryManagement.backend.repository;
 
-import com.libraryManagement.backend.dto.BooksOutDto;
 import com.libraryManagement.backend.entity.Books;
-import com.libraryManagement.backend.entity.Categories;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

@@ -13,7 +13,6 @@ public class Books {
     @Column(name = "book_id")
     private int bookId;
 
-    @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
     private Categories categoryId;
 
@@ -28,8 +27,5 @@ public class Books {
 
     @Column(name = "book_count")
     private int bookCount;
-
-    @Column(name = "book_img")
-    private String bookImg;
 
 }

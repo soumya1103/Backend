@@ -12,7 +12,7 @@ public class BooksMapper {
         booksOutDto.setBookAuthor(books.getBookAuthor());
         booksOutDto.setBookRating(books.getBookRating());
         booksOutDto.setBookCount(books.getBookCount());
-        booksOutDto.setBookImg(books.getBookImg());
+        booksOutDto.setCategoryName(books.getCategoryId().getCategoryName());
 
         return booksOutDto;
     }
@@ -25,7 +25,6 @@ public class BooksMapper {
         books.setBookAuthor(booksInDto.getBookAuthor());
         books.setBookRating(booksInDto.getBookRating());
         books.setBookCount(booksInDto.getBookCount());
-        books.setBookImg(booksInDto.getBookImg());
 
         return books;
     }
