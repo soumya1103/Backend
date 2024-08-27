@@ -12,6 +12,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/lms")
+@CrossOrigin(origins = "http://localhost:3000")
 public class UsersRestController {
 
     private iUserService usersService;
@@ -20,6 +21,7 @@ public class UsersRestController {
         this.usersService = usersService;
     }
 
+    @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/user")
     public List<UsersOutDto> findUsersByRole() {
         return usersService.getUsersByRole("USER");
@@ -32,6 +34,7 @@ public class UsersRestController {
         return usersOutDto;
     }
 
+    @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/users/count")
     public ResponseEntity<Long> getUserCount() {
         return ResponseEntity.ok(usersService.getUserCount());

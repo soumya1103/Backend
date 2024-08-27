@@ -13,6 +13,7 @@ public class Books {
     @Column(name = "book_id")
     private int bookId;
 
+    @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
     private Categories categoryId;
 
