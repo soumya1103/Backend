@@ -5,6 +5,8 @@ import lombok.Data;
 @Data
 public class BooksOutDto {
 
+    private int bookId;
+
     private String bookTitle;
 
     private String bookAuthor;

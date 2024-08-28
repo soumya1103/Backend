@@ -3,7 +3,7 @@ package com.libraryManagement.backend.dto;
 import lombok.Data;
 
 @Data
-public class CategoriesOutDto {
+public class CategoriesInDto {
 
     private int categoryId;
 

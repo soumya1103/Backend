@@ -3,11 +3,14 @@ package com.libraryManagement.backend.service.impl;
 import com.libraryManagement.backend.dto.BooksInDto;
 import com.libraryManagement.backend.dto.BooksOutDto;
 import com.libraryManagement.backend.entity.Books;
+import com.libraryManagement.backend.entity.Categories;
 import com.libraryManagement.backend.mapper.BooksMapper;
 import com.libraryManagement.backend.repository.BooksRepository;
+import com.libraryManagement.backend.repository.CategoriesRepository;
 import com.libraryManagement.backend.service.iBookService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,11 +18,16 @@ import java.util.Optional;
 @Service
 public class BookServiceImpl implements iBookService {
 
+    @Autowired
     private BooksRepository booksRepository;
 
     @Autowired
-    public BookServiceImpl(BooksRepository booksRepository) {
+    private CategoriesRepository categoriesRepository;
+
+    @Autowired
+    public BookServiceImpl(BooksRepository booksRepository, CategoriesRepository categoriesRepository) {
         this.booksRepository = booksRepository;
+        this.categoriesRepository = categoriesRepository;
     }
 
     @Override
@@ -31,11 +39,12 @@ public class BookServiceImpl implements iBookService {
     }
 
     @Override
-    public Optional<BooksOutDto> findById(int bookId) {
-        Optional<BooksOutDto> booksOutDto = Optional.ofNullable(booksRepository.findById(bookId)
-                .map(BooksMapper::mapToBooksDto)
-                .orElseThrow(() -> new RuntimeException("Book not found with id: " + bookId)));
+    public BooksOutDto findById(int bookId) {
+        Books books = booksRepository.findById(bookId).orElseThrow(
+                () -> new RuntimeException("Book not found with id: " + bookId)
+        );
 
+        BooksOutDto booksOutDto = BooksMapper.mapToBooksDto(books);
         return booksOutDto;
     }
 
@@ -47,65 +56,119 @@ public class BookServiceImpl implements iBookService {
     }
 
     @Override
-    public Optional<BooksOutDto> findByBookTitle(String bookTitle) {
-        Optional<Books> optionalBook = booksRepository.findByBookTitle(bookTitle);
+    public BooksOutDto findByBookTitle(String bookTitle) {
 
-        return optionalBook.map(BooksMapper::mapToBooksDto);
+        Books books = booksRepository.findByBookTitle(bookTitle).orElseThrow(
+                () -> new RuntimeException("Book not found with title: " + bookTitle)
+        );
+        BooksOutDto booksOutDto = BooksMapper.mapToBooksDto(books);
+        return booksOutDto;
     }
 
     @Override
-    public Optional<BooksOutDto> findByBookAuthor(String bookAuthor) {
-        Optional<Books> optionalBook = booksRepository.findByBookAuthor(bookAuthor);
-
-        return optionalBook.map(BooksMapper::mapToBooksDto);
-    }
-
-    @Override
-    public Books save(Books books) {
-        return booksRepository.save(books);
-    }
-
-    @Override
-    public BooksOutDto updateBooks(BooksInDto booksInDto) {
-        Optional<Books> books = booksRepository.findById(booksInDto.getBookId());
-
-        if(!books.isPresent()) {
-            throw new RuntimeException("Book not found");
-        }
-
-        Books booksToUpdate = books.get();
-
-        if (booksInDto.getBookTitle() != null && !booksInDto.getBookTitle().isEmpty()) {
-            booksToUpdate.setBookTitle(booksInDto.getBookTitle());
-        }
-
-        if (booksInDto.getBookAuthor() != null && !booksInDto.getBookAuthor().isEmpty()) {
-            booksToUpdate.setBookAuthor(booksInDto.getBookAuthor());
-        }
-
-        if (booksInDto.getBookRating() != 0) {
-            booksToUpdate.setBookRating(booksInDto.getBookRating());
-        }
-
-        if (booksInDto.getBookCount() != 0) {
-            booksToUpdate.setBookCount(booksInDto.getBookCount());
-        }
-
-
-        Books updatedBooks = booksRepository.save(booksToUpdate);
-
-        BooksOutDto booksOutDto = new BooksOutDto();
-        booksOutDto.setBookTitle(updatedBooks.getBookTitle());
-        booksOutDto.setBookAuthor(updatedBooks.getBookAuthor());
-        booksOutDto.setBookRating(updatedBooks.getBookRating());
-        booksOutDto.setBookCount(updatedBooks.getBookCount());
+    public BooksOutDto findByBookAuthor(String bookAuthor) {
+        Books books = booksRepository.findByBookAuthor(bookAuthor).orElseThrow(
+                () -> new RuntimeException("Book not found with author: " + bookAuthor)
+        );
+        BooksOutDto booksOutDto = BooksMapper.mapToBooksDto(books);
 
         return booksOutDto;
     }
 
     @Override
+    @Transactional
+    public BooksOutDto saveBooks(BooksInDto booksInDto) {
+        Categories category = categoriesRepository.findById(booksInDto.getCategoryId())
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+
+        Books books = BooksMapper.mapToBooksEntity(booksInDto, category);
+        books = booksRepository.save(books);
+
+        return BooksMapper.mapToBooksDto(books);
+    }
+
+    @Override
+    @Transactional
+    public BooksOutDto updateBooks(int bookId, BooksInDto booksInDto) {
+        Optional<Books> books = booksRepository.findById(bookId);
+        if (books.isEmpty()) {
+            throw new RuntimeException("Book not found with id: " + bookId);
+        }
+
+        Books existingBook = books.get();
+
+        if (booksInDto.getCategoryId() != null) {
+            Categories category = categoriesRepository.findById(booksInDto.getCategoryId())
+                    .orElseThrow(() -> new RuntimeException("Category not found with id: " + booksInDto.getCategoryId()));
+            existingBook.setCategoryId(category);
+        }
+
+        if (booksInDto.getBookTitle() != null) {
+            existingBook.setBookTitle(booksInDto.getBookTitle());
+        }
+
+        if (booksInDto.getBookAuthor() != null) {
+            existingBook.setBookAuthor(booksInDto.getBookAuthor());
+        }
+
+        if (booksInDto.getBookRating() != null) {
+            existingBook.setBookRating(booksInDto.getBookRating());
+        }
+
+        if (booksInDto.getBookCount() != null) {
+            existingBook.setBookCount(booksInDto.getBookCount());
+        }
+
+        Books updatedBook = booksRepository.save(existingBook);
+
+        return BooksMapper.mapToBooksDto(updatedBook);
+    }
+
+    @Override
+    public BooksOutDto updateBooksByTitle(String bookTitle, BooksInDto booksInDto) {
+        Optional<Books> books = booksRepository.findByBookTitle(bookTitle);
+        if (books.isEmpty()) {
+            throw new RuntimeException("Book not found with title: " + bookTitle);
+        }
+
+        Books existingBook = books.get();
+
+        if (booksInDto.getCategoryId() != null) {
+            Categories category = categoriesRepository.findById(booksInDto.getCategoryId())
+                    .orElseThrow(() -> new RuntimeException("Category not found with id: " + booksInDto.getCategoryId()));
+            existingBook.setCategoryId(category);
+        }
+
+        if (booksInDto.getBookTitle() != null) {
+            existingBook.setBookTitle(booksInDto.getBookTitle());
+        }
+
+        if (booksInDto.getBookAuthor() != null) {
+            existingBook.setBookAuthor(booksInDto.getBookAuthor());
+        }
+
+        if (booksInDto.getBookRating() != null) {
+            existingBook.setBookRating(booksInDto.getBookRating());
+        }
+
+        if (booksInDto.getBookCount() != null) {
+            existingBook.setBookCount(booksInDto.getBookCount());
+        }
+
+        Books updatedBook = booksRepository.save(existingBook);
+
+        return BooksMapper.mapToBooksDto(updatedBook);
+    }
+
+    @Override
     public void deleteById(int bookId) {
         booksRepository.deleteById(bookId);
+    }
+
+    @Override
+    @Transactional
+    public void deleteByBookTitle(String bookTitle) {
+        booksRepository.deleteByBookTitle(bookTitle);
 
     }
 

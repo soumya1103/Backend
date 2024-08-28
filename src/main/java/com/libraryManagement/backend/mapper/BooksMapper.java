@@ -3,11 +3,13 @@ package com.libraryManagement.backend.mapper;
 import com.libraryManagement.backend.dto.BooksInDto;
 import com.libraryManagement.backend.dto.BooksOutDto;
 import com.libraryManagement.backend.entity.Books;
+import com.libraryManagement.backend.entity.Categories;
 
 public class BooksMapper {
 
     public static BooksOutDto mapToBooksDto(Books books) {
         BooksOutDto booksOutDto = new BooksOutDto();
+        booksOutDto.setBookId(books.getBookId());
         booksOutDto.setBookTitle(books.getBookTitle());
         booksOutDto.setBookAuthor(books.getBookAuthor());
         booksOutDto.setBookRating(books.getBookRating());
@@ -17,10 +19,10 @@ public class BooksMapper {
         return booksOutDto;
     }
 
-    public static Books mapToBooksEntity(BooksInDto booksInDto) {
+    public static Books mapToBooksEntity(BooksInDto booksInDto, Categories category) {
         Books books = new Books();
         books.setBookId(booksInDto.getBookId());
-        books.setCategoryId(booksInDto.getCategoryId());
+        books.setCategoryId(category);
         books.setBookTitle(booksInDto.getBookTitle());
         books.setBookAuthor(booksInDto.getBookAuthor());
         books.setBookRating(booksInDto.getBookRating());
@@ -28,6 +30,4 @@ public class BooksMapper {
 
         return books;
     }
-
-
 }

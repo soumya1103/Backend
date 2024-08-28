@@ -8,6 +8,7 @@ public class CategoriesMapper {
 
     public static CategoriesOutDto mapToCategoriesDto(Categories categories) {
         CategoriesOutDto categoriesDto = new CategoriesOutDto();
+        categoriesDto.setCategoryId(categories.getCategoryId());
         categoriesDto.setCategoryName(categories.getCategoryName());
         categoriesDto.setCategoryIcon(categories.getCategoryIcon());
 

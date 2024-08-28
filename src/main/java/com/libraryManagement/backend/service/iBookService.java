@@ -13,15 +13,19 @@ public interface iBookService {
 
     List<BooksOutDto> findByCategoryName(String categoryName);
 
-    Optional<BooksOutDto> findById(int bookId);
+    BooksOutDto findById(int bookId);
 
-    Optional<BooksOutDto> findByBookTitle(String bookTitle);
+    BooksOutDto findByBookTitle(String bookTitle);
 
-    Optional<BooksOutDto> findByBookAuthor(String bookAuthor);
+    BooksOutDto findByBookAuthor(String bookAuthor);
 
-    Books save(Books books);
+    BooksOutDto saveBooks(BooksInDto booksInDto);
 
-    BooksOutDto updateBooks(BooksInDto booksInDto);
+    BooksOutDto updateBooks(int bookId, BooksInDto booksInDto);
+
+    BooksOutDto updateBooksByTitle(String bookTitle, BooksInDto booksInDto);
 
     void deleteById(int bookId);
+
+    void deleteByBookTitle(String bookTitle);
 }

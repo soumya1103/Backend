@@ -18,4 +18,6 @@ public interface BooksRepository extends JpaRepository<Books, Integer> {
     Optional<Books> findByBookTitle(String bookTitle);
 
     Optional<Books> findByBookAuthor(String bookAuthor);
+
+    void deleteByBookTitle(String bookTitle);
 }
