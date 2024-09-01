@@ -11,6 +11,7 @@ public class UsersMapper {
         usersOutDto.setUserId(users.getUserId());
         usersOutDto.setUserName(users.getUserName());
         usersOutDto.setUserCredential(users.getUserCredential());
+        usersOutDto.setPassword(users.getPassword());
         usersOutDto.setRole(users.getRole());
 
         return usersOutDto;

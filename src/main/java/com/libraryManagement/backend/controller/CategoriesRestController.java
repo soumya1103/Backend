@@ -74,7 +74,7 @@ public class CategoriesRestController {
         }
         categoriesService.deleteById(categoryId);
 
-        return "Deleted category id: " + categoryId;
+        return "Deleted category successfully";
     }
 
     @DeleteMapping("/name/{categoryName}")
@@ -85,7 +85,7 @@ public class CategoriesRestController {
         }
         categoriesService.deleteById(categories.getCategoryId());
 
-        return "Deleted category name: " + categoryName;
+        return "Deleted category successfully";
     }
 
 }

@@ -1,5 +1,6 @@
 package com.libraryManagement.backend.controller;
 
+import com.libraryManagement.backend.dto.IssuancesOutDto;
 import com.libraryManagement.backend.dto.UsersInDto;
 import com.libraryManagement.backend.dto.UsersOutDto;
 import com.libraryManagement.backend.entity.Users;
@@ -11,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/lms")
+@RequestMapping("/lms/users")
 @CrossOrigin(origins = "http://localhost:3000")
 public class UsersRestController {
 
@@ -21,23 +22,27 @@ public class UsersRestController {
         this.usersService = usersService;
     }
 
-    @CrossOrigin(origins = "http://localhost:3000")
-    @GetMapping("/user")
+    @GetMapping("")
     public List<UsersOutDto> findUsersByRole() {
         return usersService.getUsersByRole("USER");
     }
 
-    @GetMapping("/user/{userId}")
+    @GetMapping("/{userId}")
     public Optional<UsersOutDto> getUser(@PathVariable int userId) {
         Optional<UsersOutDto> usersOutDto = usersService.findById(userId);
 
         return usersOutDto;
     }
 
-    @CrossOrigin(origins = "http://localhost:3000")
-    @GetMapping("/users/count")
+    @GetMapping("/count")
     public ResponseEntity<Long> getUserCount() {
         return ResponseEntity.ok(usersService.getUserCount());
+    }
+
+    @GetMapping("/credential/{userCredential}")
+    public ResponseEntity<UsersOutDto> getUserByUserCredential(@PathVariable String userCredential) {
+        UsersOutDto usersOutDto = usersService.getUserByUserCredential(userCredential);
+        return ResponseEntity.ok(usersOutDto);
     }
 
     @PostMapping("/admin")
@@ -48,7 +53,7 @@ public class UsersRestController {
         return  dbAdmin;
     }
 
-    @PostMapping("/user")
+    @PostMapping("")
     public Users addUser(@RequestBody Users users){
         users.setRole("USER");
         Users dbUser = usersService.save(users);
@@ -56,7 +61,7 @@ public class UsersRestController {
         return  dbUser;
     }
 
-    @PutMapping("/user/{userId}")
+    @PutMapping("/id/{userId}")
     public ResponseEntity<UsersOutDto> updateUser(@PathVariable int userId, @RequestBody UsersInDto usersInDto) {
         usersInDto.setUserId(userId);
         UsersOutDto updatedUser = usersService.updateUser(usersInDto);
@@ -64,7 +69,7 @@ public class UsersRestController {
         return ResponseEntity.ok(updatedUser);
     }
 
-    @DeleteMapping("/user/{userId}")
+    @DeleteMapping("/id/{userId}")
     public String removeUser(@PathVariable int userId) {
         Optional<UsersOutDto> users = usersService.findById(userId);
         if (users.isEmpty()) {

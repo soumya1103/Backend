@@ -1,11 +1,9 @@
 package com.libraryManagement.backend.entity;
 
-import com.libraryManagement.backend.dto.UsersOutDto;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @Table(name = "issuances")
@@ -19,11 +17,11 @@ public class Issuances {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private Users userId;
+    private Users users;
 
     @ManyToOne
     @JoinColumn(name = "book_id", nullable = false)
-    private Books bookId;
+    private Books books;
 
     @Column(name = "issue_date")
     private LocalDateTime issueDate;

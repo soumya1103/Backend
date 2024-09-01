@@ -2,7 +2,9 @@ package com.libraryManagement.backend.service.impl;
 
 import com.libraryManagement.backend.dto.UsersInDto;
 import com.libraryManagement.backend.dto.UsersOutDto;
+import com.libraryManagement.backend.entity.Issuances;
 import com.libraryManagement.backend.entity.Users;
+import com.libraryManagement.backend.mapper.IssuancesMapper;
 import com.libraryManagement.backend.mapper.UsersMapper;
 import com.libraryManagement.backend.repository.UsersRepository;
 import com.libraryManagement.backend.service.iUserService;
@@ -16,12 +18,8 @@ import java.util.Optional;
 @Service
 public class UserServiceImpl implements iUserService {
 
-    private UsersRepository usersRepository;
-
     @Autowired
-    public UserServiceImpl(UsersRepository usersRepository) {
-        this.usersRepository = usersRepository;
-    }
+    private UsersRepository usersRepository;
 
     @Override
     public List<UsersOutDto> getUsersByRole(String role) {
@@ -93,5 +91,12 @@ public class UserServiceImpl implements iUserService {
     @Override
     public long getUserCount() {
         return usersRepository.count();
+    }
+
+    @Override
+    public UsersOutDto getUserByUserCredential(String userCredential) {
+        Users users =  usersRepository.findByUserCredential(userCredential);
+
+        return UsersMapper.mapToUsersOutDto(users);
     }
 }

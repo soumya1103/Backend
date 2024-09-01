@@ -24,12 +24,6 @@ public class BookServiceImpl implements iBookService {
     @Autowired
     private CategoriesRepository categoriesRepository;
 
-    @Autowired
-    public BookServiceImpl(BooksRepository booksRepository, CategoriesRepository categoriesRepository) {
-        this.booksRepository = booksRepository;
-        this.categoriesRepository = categoriesRepository;
-    }
-
     @Override
     public List<BooksOutDto> findAll() {
         List<BooksOutDto> booksOutDto = booksRepository.findAll()

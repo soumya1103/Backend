@@ -1,6 +1,7 @@
 package com.libraryManagement.backend.service;
 
 
+import com.libraryManagement.backend.dto.IssuancesOutDto;
 import com.libraryManagement.backend.dto.UsersInDto;
 import com.libraryManagement.backend.dto.UsersOutDto;
 import com.libraryManagement.backend.entity.Users;
@@ -21,4 +22,7 @@ public interface iUserService {
     void deleteById(int id);
 
     long getUserCount();
+
+    UsersOutDto getUserByUserCredential(String userCredential);
+
 }

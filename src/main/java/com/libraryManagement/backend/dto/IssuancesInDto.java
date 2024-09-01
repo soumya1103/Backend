@@ -11,9 +11,9 @@ public class IssuancesInDto {
 
     private int issuanceId;
 
-    private Users userId;
+    private Integer userId;
 
-    private Books bookId;
+    private Integer bookId;
 
     private LocalDateTime issueDate;
 

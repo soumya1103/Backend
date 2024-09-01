@@ -15,13 +15,8 @@ import java.util.Optional;
 @Service
 public class CategoriesServiceImpl implements iCategoriesService {
 
-    private CategoriesRepository categoriesRepository;
-
     @Autowired
-    public CategoriesServiceImpl(CategoriesRepository categoriesRepository) {
-        this.categoriesRepository = categoriesRepository;
-    }
-
+    private CategoriesRepository categoriesRepository;
 
     @Override
     public List<CategoriesOutDto> findAll() {

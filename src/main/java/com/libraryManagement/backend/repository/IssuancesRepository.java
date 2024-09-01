@@ -5,14 +5,25 @@ import com.libraryManagement.backend.entity.Books;
 import com.libraryManagement.backend.entity.Issuances;
 import com.libraryManagement.backend.entity.Users;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
 public interface IssuancesRepository extends JpaRepository<Issuances, Integer> {
+    List<Issuances> findByIssuanceType(String issuanceType);
 
-    List<Issuances> findByUserId(Users userId);
+    @Query("SELECT COUNT(u) FROM Issuances u WHERE u.issuanceType = 'Inhouse'")
+    long count();
 
-    List<Issuances> findByBookId(Books bookId);
+    List<Issuances> findByStatus(String status);
+
+//    List<Issuances> findByUserId(Users userId);
+//
+//    List<Issuances> findByBookId(Books bookId);
+//
+//    @Query("SELECT i FROM Issuances i WHERE i.users.userCredential = :userCredential")
+//    Issuances findByUserCredential(@Param("userCredential") String userCredential);
 }
