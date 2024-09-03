@@ -22,4 +22,6 @@ public interface iIssuancesService {
     List<IssuancesOutDto> getIssuanceByStatus(String status);
 
     long getIssuanceCountByType();
+
+    List<IssuancesOutDto> getIssuanceByUserCredential(String userCredential);
 }

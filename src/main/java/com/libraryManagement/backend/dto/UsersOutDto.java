@@ -11,8 +11,10 @@ public class UsersOutDto {
 
     private String userCredential;
 
-    private String password;
+//    private String password;
 
     private String role;
+
+    private String token;
 
 }

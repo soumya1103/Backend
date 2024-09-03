@@ -5,7 +5,6 @@ import com.libraryManagement.backend.dto.CategoriesOutDto;
 import com.libraryManagement.backend.entity.Categories;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface iCategoriesService {
 
@@ -13,7 +12,7 @@ public interface iCategoriesService {
 
     Categories findByCategoryNameIgnoreCase(String categoryName);
 
-    Optional<CategoriesOutDto> findById(int categoryId);
+    CategoriesOutDto findById(int categoryId);
 
     Categories save(Categories categories);
 

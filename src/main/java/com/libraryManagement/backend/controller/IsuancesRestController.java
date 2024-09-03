@@ -1,17 +1,16 @@
 package com.libraryManagement.backend.controller;
 
-import com.libraryManagement.backend.dto.BooksOutDto;
 import com.libraryManagement.backend.dto.IssuancesInDto;
 import com.libraryManagement.backend.dto.IssuancesOutDto;
-import com.libraryManagement.backend.dto.UsersOutDto;
+import com.libraryManagement.backend.entity.Users;
+import com.libraryManagement.backend.service.iIssuancesService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.libraryManagement.backend.service.iIssuancesService;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/lms/issuances")
+@RequestMapping("/lms")
 @CrossOrigin(origins = "http://localhost:3000")
 public class IsuancesRestController {
 
@@ -21,38 +20,38 @@ public class IsuancesRestController {
         this.issuancesService = issuancesService;
     }
 
-    @GetMapping("")
+    @GetMapping("/issuances")
     public List<IssuancesOutDto> findAll() {
         return issuancesService.findAll();
     }
 
-    @GetMapping("/id/{issuanceId}")
+    @GetMapping("/issuances/id/{issuanceId}")
     public ResponseEntity<IssuancesOutDto> getIssuances(@PathVariable int issuanceId) {
         IssuancesOutDto issuancesOutDto = issuancesService.findById(issuanceId);
 
         return ResponseEntity.ok(issuancesOutDto);
     }
 
-    @GetMapping("/type")
+    @GetMapping("/issuances/type")
     public List<IssuancesOutDto> findByIssuanceType() {
         return issuancesService.getIssuanceByIssuanceType("Inhouse");
     }
 
-    @GetMapping("/type/count")
+    @GetMapping("/issuances/type/count")
     public ResponseEntity<Long> getIssaunceByTypeCount() {
         return ResponseEntity.ok(issuancesService.getIssuanceCountByType());
     }
 
-//    @GetMapping("/user/{userId}")
-//    public ResponseEntity<List<IssuancesOutDto>> findByUserId(@PathVariable Users userId) {
-//        List<IssuancesOutDto> issuances = issuancesService.findByUserId(userId);
-//
-//        if (issuances.isEmpty()) {
-//            return ResponseEntity.notFound().build();
-//        } else {
-//            return ResponseEntity.ok(issuances);
-//        }
-//    }
+    @GetMapping("/issuance/user/{userCredential}")
+    public ResponseEntity<List<IssuancesOutDto>> getByUserCredential(@PathVariable Users userCredential) {
+        List<IssuancesOutDto> issuances = issuancesService.getIssuanceByUserCredential(String.valueOf(userCredential));
+
+        if (issuances.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        } else {
+            return ResponseEntity.ok(issuances);
+        }
+    }
 //
 //    @GetMapping("/issuances/book/{bookId}")
 //    public ResponseEntity<List<IssuancesOutDto>> findByBookId(@PathVariable Books bookId) {
@@ -66,39 +65,27 @@ public class IsuancesRestController {
 //    }
 //
 
-    @PostMapping("")
+    @PostMapping("/issuances")
     public ResponseEntity<IssuancesOutDto> addIssuance(@RequestBody IssuancesInDto issuancesInDto) {
         IssuancesOutDto issuancesOutDto = issuancesService.saveIssuances(issuancesInDto);
 
         return ResponseEntity.ok(issuancesOutDto);
     }
 
-    @PutMapping("/id/{issuanceId}")
+    @PutMapping("/issuances/id/{issuanceId}")
     public ResponseEntity<IssuancesOutDto> updateIssuance(@PathVariable int issuanceId, @RequestBody IssuancesInDto issuancesInDto) {
         IssuancesOutDto updatedIssuance = issuancesService.updateIssuance(issuanceId, issuancesInDto);
         return ResponseEntity.ok(updatedIssuance);
     }
 
-    @DeleteMapping("/id/{issuanceId}")
-    public String removeIssuance(@PathVariable int issuanceId) {
-
-        IssuancesOutDto issuancesOutDto = issuancesService.findById(issuanceId);
-
-        issuancesService.deleteById(issuanceId);
-
-        return "Deleted issuance id: " + issuanceId;
-    }
-
-//    @DeleteMapping("/issuances/{issuanceId}")
+//    @DeleteMapping("/issuances/id/{issuanceId}")
 //    public String removeIssuance(@PathVariable int issuanceId) {
 //
-//        Optional<IssuancesOutDto> issuancesOutDto = issuancesService.findById(issuanceId);
-//        if (issuancesOutDto.isEmpty()) {
-//            throw new RuntimeException("Issuance not found: " + issuanceId);
-//        }
+//        IssuancesOutDto issuancesOutDto = issuancesService.findById(issuanceId);
+//
 //        issuancesService.deleteById(issuanceId);
 //
 //        return "Deleted issuance id: " + issuanceId;
-//
 //    }
+
 }

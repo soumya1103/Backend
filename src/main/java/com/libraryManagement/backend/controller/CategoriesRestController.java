@@ -26,7 +26,7 @@ public class CategoriesRestController {
 
     @GetMapping("/id/{categoryId}")
     public Optional<CategoriesOutDto> getCategory(@PathVariable int categoryId) {
-        Optional<CategoriesOutDto> categoriesOutDto = categoriesService.findById(categoryId);
+        Optional<CategoriesOutDto> categoriesOutDto = Optional.ofNullable(categoriesService.findById(categoryId));
 
         return categoriesOutDto;
     }
@@ -68,7 +68,7 @@ public class CategoriesRestController {
     @DeleteMapping("/id/{categoryId}")
     public String removeCategory(@PathVariable int categoryId) {
 
-        Optional<CategoriesOutDto> categoriesOutDto = categoriesService.findById(categoryId);
+        Optional<CategoriesOutDto> categoriesOutDto = Optional.ofNullable(categoriesService.findById(categoryId));
         if (categoriesOutDto.isEmpty()) {
             throw new RuntimeException("Category not found: " + categoryId);
         }

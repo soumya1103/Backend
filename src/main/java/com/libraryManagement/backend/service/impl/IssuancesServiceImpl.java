@@ -6,7 +6,6 @@ import com.libraryManagement.backend.entity.Books;
 import com.libraryManagement.backend.entity.Issuances;
 import com.libraryManagement.backend.entity.Users;
 import com.libraryManagement.backend.mapper.IssuancesMapper;
-import com.libraryManagement.backend.mapper.UsersMapper;
 import com.libraryManagement.backend.repository.BooksRepository;
 import com.libraryManagement.backend.repository.IssuancesRepository;
 import com.libraryManagement.backend.repository.UsersRepository;
@@ -134,6 +133,16 @@ public class IssuancesServiceImpl implements iIssuancesService {
     @Override
     public long getIssuanceCountByType() {
         return issuancesRepository.count();
+    }
+
+    @Override
+    public List<IssuancesOutDto> getIssuanceByUserCredential(String userCredential) {
+        List<Issuances> issuances = issuancesRepository.findByUserCredential(userCredential);
+        List<IssuancesOutDto> issuancesOutDto = new ArrayList<>();
+
+        issuances.forEach(issuance -> issuancesOutDto.add(IssuancesMapper.mapToIssuancesDto(issuance)));
+
+        return issuancesOutDto;
     }
 
 //    @Override

@@ -31,10 +31,12 @@ public class CategoriesServiceImpl implements iCategoriesService {
         return categoriesRepository.findByCategoryNameIgnoreCase(categoryName);
     }
 
-    public Optional<CategoriesOutDto> findById(int categoryId) {
-        Optional<CategoriesOutDto> categoriesOutDto = Optional.ofNullable(categoriesRepository.findById(categoryId)
-                .map(CategoriesMapper::mapToCategoriesDto)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + categoryId)));
+    public CategoriesOutDto findById(int categoryId) {
+        Categories categories = categoriesRepository.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+
+        CategoriesOutDto categoriesOutDto = CategoriesMapper.mapToCategoriesDto(categories);
+
 
         return categoriesOutDto;
 

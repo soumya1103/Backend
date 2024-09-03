@@ -1,6 +1,5 @@
 package com.libraryManagement.backend.controller;
 
-import com.libraryManagement.backend.dto.IssuancesOutDto;
 import com.libraryManagement.backend.dto.UsersInDto;
 import com.libraryManagement.backend.dto.UsersOutDto;
 import com.libraryManagement.backend.entity.Users;
@@ -24,7 +23,7 @@ public class UsersRestController {
 
     @GetMapping("")
     public List<UsersOutDto> findUsersByRole() {
-        return usersService.getUsersByRole("USER");
+        return usersService.getUsersByRole("ROLE_USER");
     }
 
     @GetMapping("/{userId}")
@@ -47,15 +46,14 @@ public class UsersRestController {
 
     @PostMapping("/admin")
     public Users addAdmin(@RequestBody Users users){
-        users.setRole("ADMIN");
+        users.setRole("ROLE_ADMIN");
         Users dbAdmin = usersService.save(users);
 
         return  dbAdmin;
     }
 
-    @PostMapping("")
+    @PostMapping("/user")
     public Users addUser(@RequestBody Users users){
-        users.setRole("USER");
         Users dbUser = usersService.save(users);
 
         return  dbUser;

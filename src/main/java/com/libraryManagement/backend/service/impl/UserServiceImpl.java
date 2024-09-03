@@ -1,25 +1,38 @@
 package com.libraryManagement.backend.service.impl;
 
+import com.libraryManagement.backend.constants.JwtConstants;
 import com.libraryManagement.backend.dto.UsersInDto;
 import com.libraryManagement.backend.dto.UsersOutDto;
-import com.libraryManagement.backend.entity.Issuances;
 import com.libraryManagement.backend.entity.Users;
-import com.libraryManagement.backend.mapper.IssuancesMapper;
 import com.libraryManagement.backend.mapper.UsersMapper;
 import com.libraryManagement.backend.repository.UsersRepository;
 import com.libraryManagement.backend.service.iUserService;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.apache.commons.lang3.RandomStringUtils;
 
+import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements iUserService {
 
     @Autowired
     private UsersRepository usersRepository;
+
+    private final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+
+    private final Environment env;
 
     @Override
     public List<UsersOutDto> getUsersByRole(String role) {
@@ -44,7 +57,23 @@ public class UserServiceImpl implements iUserService {
 
     @Override
     public Users save(Users users) {
+        String randomPassword = generateRandomPassword();
+        users.setRole("ROLE_USER");
+
+        // Encrypt the generated password
+        String encryptedPassword = generatePassword(randomPassword);
+        users.setPassword(encryptedPassword);
+
         return usersRepository.save(users);
+    }
+
+    private String generateRandomPassword() {
+        return RandomStringUtils.randomAlphanumeric(8);
+    }
+
+
+    public String generatePassword(String rawPassword) {
+        return bCryptPasswordEncoder.encode(rawPassword);
     }
 
     @Override
@@ -98,5 +127,20 @@ public class UserServiceImpl implements iUserService {
         Users users =  usersRepository.findByUserCredential(userCredential);
 
         return UsersMapper.mapToUsersOutDto(users);
+    }
+
+    @Override
+    public UsersOutDto getUserByToken(String token) {
+        String secret = env.getProperty(JwtConstants.JWT_SECRET_KEY, JwtConstants.JWT_SECRET_DEFAULT_VALUE);
+        SecretKey secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        Claims claims = Jwts.parser().verifyWith(secretKey)
+                .build().parseSignedClaims(token).getPayload();
+        String username = String.valueOf(claims.get("userCredential"));
+
+            Users users = usersRepository.findByUserCredential(username);
+
+            UsersOutDto usersOutDto  = UsersMapper.mapToUsersOutDto(users);
+            usersOutDto.setToken(token);
+            return  usersOutDto;
     }
 }
