@@ -58,8 +58,8 @@ public class ProjectSecurityConfig {
                         .requestMatchers(  "/lms/books/**").hasRole("ADMIN")
 
 //                User routes
+                        .requestMatchers(  "/lms/users/credential/{userCredential}").authenticated()
                         .requestMatchers(  "/lms/users/**").hasRole("ADMIN")
-
 //                Issuance routes
                         .requestMatchers("/lms/issuance/user/{userCredential}").authenticated()
                         .requestMatchers("/lms/issuances/**").hasRole("ADMIN")
