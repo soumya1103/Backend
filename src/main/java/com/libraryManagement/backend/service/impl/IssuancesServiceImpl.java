@@ -11,6 +11,8 @@ import com.libraryManagement.backend.repository.IssuancesRepository;
 import com.libraryManagement.backend.repository.UsersRepository;
 import com.libraryManagement.backend.service.iIssuancesService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,11 +34,11 @@ public class IssuancesServiceImpl implements iIssuancesService {
     private UsersRepository usersRepository;
 
     @Override
-    public List<IssuancesOutDto> findAll() {
-        List<IssuancesOutDto> issuancesOutDto = issuancesRepository.findAll()
-                .stream().map(IssuancesMapper::mapToIssuancesDto).toList();
+    public Page<IssuancesOutDto> getIssuances(Pageable pageable) {
+        Page<Issuances> issuancesPage;
+        issuancesPage = issuancesRepository.findAll(pageable);
 
-        return issuancesOutDto;
+        return issuancesPage.map(IssuancesMapper::mapToIssuancesDto);
     }
 
     @Override
@@ -145,19 +147,29 @@ public class IssuancesServiceImpl implements iIssuancesService {
         return issuancesOutDto;
     }
 
-//    @Override
-//    public List<IssuancesOutDto> findByUserId(Users userId) {
-//        return issuancesRepository.findByUserId(userId)
-//                .stream()
-//                .map(IssuancesMapper::mapToIssuancesDto)
-//                .toList();
-//    }
-//
-//    @Override
-//    public List<IssuancesOutDto> findByBookId(Books bookId) {
-//        return issuancesRepository.findByBookId(bookId)
-//                .stream()
-//                .map(IssuancesMapper::mapToIssuancesDto)
-//                .toList();
-//    }
+    @Override
+    public List<IssuancesOutDto> findByBookId(int bookId) {
+        List<Issuances> issuances = issuancesRepository.findByBookId(bookId);
+        List<IssuancesOutDto> issuancesOutDto = new ArrayList<>();
+
+        issuances.forEach(issuance -> issuancesOutDto.add(IssuancesMapper.mapToIssuancesDto(issuance)));
+
+        return issuancesOutDto;
+    }
+
+    @Override
+    public List<IssuancesOutDto> findByUserId(int userId) {
+        List<Issuances> issuances = issuancesRepository.findByUserId(userId);
+        List<IssuancesOutDto> issuancesOutDto = new ArrayList<>();
+
+        issuances.forEach(issuance -> issuancesOutDto.add(IssuancesMapper.mapToIssuancesDto(issuance)));
+
+        return issuancesOutDto;
+    }
+
+    @Override
+    public List<IssuancesOutDto> searchCredential(String keywords) {
+        List<Issuances> issuances = issuancesRepository.findByUserCredentialOrBookTitleContaining("%" + keywords + "%");
+        return issuances.stream().map(IssuancesMapper::mapToIssuancesDto).toList();
+    }
 }

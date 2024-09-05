@@ -11,15 +11,16 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.apache.commons.lang3.RandomStringUtils;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,19 +36,18 @@ public class UserServiceImpl implements iUserService {
     private final Environment env;
 
     @Override
-    public List<UsersOutDto> getUsersByRole(String role) {
-        List<Users> usersList = usersRepository.findByRole(role);
-        List<UsersOutDto> usersOutDtoList = new ArrayList<>();
+    public Page<UsersOutDto> getUsersByRole(Pageable pageable, String role) {
+        Page<Users> usersPage;
+        usersPage = usersRepository.findByRole(pageable, role);
 
-        usersList.forEach(users -> usersOutDtoList.add(UsersMapper.mapToUsersOutDto(users)));
-
-        return usersOutDtoList;
+        return usersPage.map(UsersMapper::mapToUsersOutDto);
     }
 
     @Override
     public Optional<UsersOutDto> findById(int userId) {
+        System.out.println("User Id" + userId);
         Optional<UsersOutDto> usersOutDto = Optional.ofNullable(usersRepository.findById(userId)
-                .filter(users -> "USER".equals(users.getRole()))
+                .filter(users -> "ROLE_USER".equals(users.getRole()))
                 .map(UsersMapper::mapToUsersOutDto)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId)));
 
@@ -57,6 +57,7 @@ public class UserServiceImpl implements iUserService {
 
     @Override
     public Users save(Users users) {
+        System.out.println("Users" + users.toString());
         String randomPassword = generateRandomPassword();
         users.setRole("ROLE_USER");
 
@@ -86,7 +87,7 @@ public class UserServiceImpl implements iUserService {
 
         Users userToUpdate = optionalUsers.get();
 
-        if (!"USER".equals(userToUpdate.getRole())) {
+        if (!"ROLE_USER".equals(userToUpdate.getRole())) {
             throw new RuntimeException("Only users with role USER can be updated");
         }
 
@@ -142,5 +143,19 @@ public class UserServiceImpl implements iUserService {
             UsersOutDto usersOutDto  = UsersMapper.mapToUsersOutDto(users);
             usersOutDto.setToken(token);
             return  usersOutDto;
+    }
+
+    @Override
+    public List<UsersOutDto> getAllUsersByRole(String roleUser) {
+        List<UsersOutDto> usersOutDto = usersRepository.findUserByRole(roleUser)
+                .stream().map(UsersMapper::mapToUsersOutDto).toList();
+
+        return usersOutDto;
+    }
+
+    @Override
+    public List<UsersOutDto> searchByUserCredential(String keywords) {
+        List<Users> users = usersRepository.findByUserCredentialOrUserNameContaining("%" + keywords + "%");
+        return users.stream().map(UsersMapper::mapToUsersOutDto).toList();
     }
 }

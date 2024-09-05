@@ -2,13 +2,18 @@ package com.libraryManagement.backend.service.impl;
 
 import com.libraryManagement.backend.dto.BooksInDto;
 import com.libraryManagement.backend.dto.BooksOutDto;
+import com.libraryManagement.backend.dto.UsersOutDto;
 import com.libraryManagement.backend.entity.Books;
 import com.libraryManagement.backend.entity.Categories;
+import com.libraryManagement.backend.entity.Users;
 import com.libraryManagement.backend.mapper.BooksMapper;
+import com.libraryManagement.backend.mapper.UsersMapper;
 import com.libraryManagement.backend.repository.BooksRepository;
 import com.libraryManagement.backend.repository.CategoriesRepository;
 import com.libraryManagement.backend.service.iBookService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,11 +30,11 @@ public class BookServiceImpl implements iBookService {
     private CategoriesRepository categoriesRepository;
 
     @Override
-    public List<BooksOutDto> findAll() {
-        List<BooksOutDto> booksOutDto = booksRepository.findAll()
-                .stream().map(BooksMapper::mapToBooksDto).toList();
+    public Page<BooksOutDto> getBooks(Pageable pageable) {
+        Page<Books> booksPage;
+        booksPage = booksRepository.findAll(pageable);
 
-        return booksOutDto;
+        return booksPage.map(BooksMapper::mapToBooksDto);
     }
 
     @Override
@@ -164,6 +169,20 @@ public class BookServiceImpl implements iBookService {
     public void deleteByBookTitle(String bookTitle) {
         booksRepository.deleteByBookTitle(bookTitle);
 
+    }
+
+    @Override
+    public List<BooksOutDto> getAllBooks() {
+        List<BooksOutDto> booksOutDto = booksRepository.findAll()
+                .stream().map(BooksMapper::mapToBooksDto).toList();
+
+        return booksOutDto;
+    }
+
+    @Override
+    public List<BooksOutDto> searchByBooks(String keywords) {
+        List<Books> books = booksRepository.findByBookTitleOrBookAuthorContaining("%" + keywords + "%");
+        return books.stream().map(BooksMapper::mapToBooksDto).toList();
     }
 
 }

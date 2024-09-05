@@ -2,14 +2,14 @@ package com.libraryManagement.backend.service;
 
 import com.libraryManagement.backend.dto.BooksInDto;
 import com.libraryManagement.backend.dto.BooksOutDto;
-import com.libraryManagement.backend.entity.Books;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
-import java.util.Optional;
 
 
 public interface iBookService {
-    List<BooksOutDto> findAll();
+    Page<BooksOutDto> getBooks(Pageable pageable);
 
     List<BooksOutDto> findByCategoryName(String categoryName);
 
@@ -28,4 +28,8 @@ public interface iBookService {
     void deleteById(int bookId);
 
     void deleteByBookTitle(String bookTitle);
+
+    List<BooksOutDto> getAllBooks();
+
+    List<BooksOutDto> searchByBooks(String keywords);
 }

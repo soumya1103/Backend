@@ -22,4 +22,8 @@ public class IssuancesOutDto {
     private String status;
 
     private String issuanceType;
+
+    private int userId;
+
+    private int bookId;
 }

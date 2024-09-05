@@ -7,6 +7,8 @@ import com.libraryManagement.backend.mapper.CategoriesMapper;
 import com.libraryManagement.backend.repository.CategoriesRepository;
 import com.libraryManagement.backend.service.iCategoriesService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,11 +21,11 @@ public class CategoriesServiceImpl implements iCategoriesService {
     private CategoriesRepository categoriesRepository;
 
     @Override
-    public List<CategoriesOutDto> findAll() {
-        List<CategoriesOutDto> categoriesOutDto = categoriesRepository.findAll()
-                .stream().map(CategoriesMapper::mapToCategoriesDto).toList();
+    public Page<CategoriesOutDto> getCategories(Pageable pageable) {
+        Page<Categories> categoryPage;
+        categoryPage = categoriesRepository.findAll(pageable);
 
-        return categoriesOutDto;
+        return categoryPage.map(CategoriesMapper::mapToCategoriesDto);
     }
 
     @Override
@@ -107,5 +109,19 @@ public class CategoriesServiceImpl implements iCategoriesService {
     @Override
     public void deleteByCategoryName(String categoryName) {
         categoriesRepository.deleteByCategoryName(categoryName);
+    }
+
+    @Override
+    public List<CategoriesOutDto> getAllCategories() {
+        List<CategoriesOutDto> categoriesOutDto = categoriesRepository.findAll()
+                .stream().map(CategoriesMapper::mapToCategoriesDto).toList();
+
+        return categoriesOutDto;
+    }
+
+    @Override
+    public List<CategoriesOutDto> searchCategories(String keyword) {
+        List<Categories> categories = categoriesRepository.findByCategoryNameContaining(keyword);
+        return categories.stream().map(CategoriesMapper::mapToCategoriesDto).toList();
     }
 }

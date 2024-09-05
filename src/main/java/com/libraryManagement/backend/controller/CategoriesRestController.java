@@ -5,6 +5,10 @@ import com.libraryManagement.backend.dto.CategoriesOutDto;
 import com.libraryManagement.backend.entity.Categories;
 import com.libraryManagement.backend.service.iCategoriesService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,9 +23,18 @@ public class CategoriesRestController {
     @Autowired
     private iCategoriesService categoriesService;
 
+    @GetMapping("/all")
+    public List<CategoriesOutDto> getAllCategories() {
+        return categoriesService.getAllCategories();
+    }
+
     @GetMapping("")
-    public List<CategoriesOutDto> findAll() {
-        return categoriesService.findAll();
+    public Page<CategoriesOutDto> getCategories(
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size
+            ){
+            Pageable pageable = PageRequest.of(page, size).withSort(Sort.by(Sort.Direction.DESC, "categoryId"));
+        return categoriesService.getCategories(pageable);
     }
 
     @GetMapping("/id/{categoryId}")
@@ -86,6 +99,12 @@ public class CategoriesRestController {
         categoriesService.deleteById(categories.getCategoryId());
 
         return "Deleted category successfully";
+    }
+
+    @GetMapping("/search/{keywords}")
+    public ResponseEntity<List<CategoriesOutDto>> searchByCategoryName(@PathVariable String keywords) {
+        List<CategoriesOutDto> categoriesOutDto = categoriesService.searchCategories(keywords);
+        return ResponseEntity.ok(categoriesOutDto);
     }
 
 }

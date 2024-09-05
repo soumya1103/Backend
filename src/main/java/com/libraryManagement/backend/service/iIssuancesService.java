@@ -2,12 +2,14 @@ package com.libraryManagement.backend.service;
 
 import com.libraryManagement.backend.dto.IssuancesInDto;
 import com.libraryManagement.backend.dto.IssuancesOutDto;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
 public interface iIssuancesService {
 
-    List<IssuancesOutDto> findAll();
+    Page<IssuancesOutDto> getIssuances(Pageable pageable);
 
     IssuancesOutDto findById(int issuanceId);
 
@@ -24,4 +26,10 @@ public interface iIssuancesService {
     long getIssuanceCountByType();
 
     List<IssuancesOutDto> getIssuanceByUserCredential(String userCredential);
+
+    List<IssuancesOutDto> findByBookId(int bookId);
+
+    List<IssuancesOutDto> findByUserId(int userId);
+
+    List<IssuancesOutDto> searchCredential(String keywords);
 }

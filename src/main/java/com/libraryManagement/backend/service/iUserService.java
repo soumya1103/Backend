@@ -4,13 +4,15 @@ package com.libraryManagement.backend.service;
 import com.libraryManagement.backend.dto.UsersInDto;
 import com.libraryManagement.backend.dto.UsersOutDto;
 import com.libraryManagement.backend.entity.Users;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface iUserService {
 
-    List<UsersOutDto> getUsersByRole(String role);
+    Page<UsersOutDto> getUsersByRole(Pageable pageable, String role);
 
     Optional<UsersOutDto> findById(int theId);
 
@@ -26,4 +28,7 @@ public interface iUserService {
 
     UsersOutDto getUserByToken(String token);
 
+    List<UsersOutDto> getAllUsersByRole(String roleUser);
+
+    List<UsersOutDto> searchByUserCredential(String keywords);
 }

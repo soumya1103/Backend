@@ -4,6 +4,10 @@ import com.libraryManagement.backend.dto.UsersInDto;
 import com.libraryManagement.backend.dto.UsersOutDto;
 import com.libraryManagement.backend.entity.Users;
 import com.libraryManagement.backend.service.iUserService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,9 +25,18 @@ public class UsersRestController {
         this.usersService = usersService;
     }
 
+    @GetMapping("/all")
+    public List<UsersOutDto> getAllUsersByRole() {
+        return usersService.getAllUsersByRole("ROLE_USER");
+    }
+
     @GetMapping("")
-    public List<UsersOutDto> findUsersByRole() {
-        return usersService.getUsersByRole("ROLE_USER");
+    public Page<UsersOutDto> getUsersByRole(
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size
+    ){
+        Pageable pageable = PageRequest.of(page, size).withSort(Sort.by(Sort.Direction.DESC, "userId"));
+        return usersService.getUsersByRole(pageable, "ROLE_USER");
     }
 
     @GetMapping("/{userId}")
@@ -77,5 +90,9 @@ public class UsersRestController {
         return "Deleted employee id: " + userId;
     }
 
-
+    @GetMapping("/search/{keywords}")
+    public ResponseEntity<List<UsersOutDto>> searchUserByUserCredential(@PathVariable String keywords) {
+        List<UsersOutDto> usersOutDto = usersService.searchByUserCredential(keywords);
+        return ResponseEntity.ok(usersOutDto);
+    }
 }

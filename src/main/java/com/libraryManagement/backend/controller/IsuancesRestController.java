@@ -2,8 +2,11 @@ package com.libraryManagement.backend.controller;
 
 import com.libraryManagement.backend.dto.IssuancesInDto;
 import com.libraryManagement.backend.dto.IssuancesOutDto;
-import com.libraryManagement.backend.entity.Users;
 import com.libraryManagement.backend.service.iIssuancesService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,8 +24,12 @@ public class IsuancesRestController {
     }
 
     @GetMapping("/issuances")
-    public List<IssuancesOutDto> findAll() {
-        return issuancesService.findAll();
+    public Page<IssuancesOutDto> getIssuances(
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size
+    ){
+        Pageable pageable = PageRequest.of(page, size).withSort(Sort.by(Sort.Direction.DESC, "issuanceId"));
+        return issuancesService.getIssuances(pageable);
     }
 
     @GetMapping("/issuances/id/{issuanceId}")
@@ -38,13 +45,13 @@ public class IsuancesRestController {
     }
 
     @GetMapping("/issuances/type/count")
-    public ResponseEntity<Long> getIssaunceByTypeCount() {
+    public ResponseEntity<Long> getIssuanceByTypeCount() {
         return ResponseEntity.ok(issuancesService.getIssuanceCountByType());
     }
 
     @GetMapping("/issuance/user/{userCredential}")
-    public ResponseEntity<List<IssuancesOutDto>> getByUserCredential(@PathVariable Users userCredential) {
-        List<IssuancesOutDto> issuances = issuancesService.getIssuanceByUserCredential(String.valueOf(userCredential));
+    public ResponseEntity<List<IssuancesOutDto>> getByUserCredential(@PathVariable String userCredential) {
+        List<IssuancesOutDto> issuances = issuancesService.getIssuanceByUserCredential(userCredential);
 
         if (issuances.isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -52,18 +59,28 @@ public class IsuancesRestController {
             return ResponseEntity.ok(issuances);
         }
     }
-//
-//    @GetMapping("/issuances/book/{bookId}")
-//    public ResponseEntity<List<IssuancesOutDto>> findByBookId(@PathVariable Books bookId) {
-//        List<IssuancesOutDto> issuances = issuancesService.findByBookId(bookId);
-//
-//        if (issuances.isEmpty()) {
-//            return ResponseEntity.notFound().build();
-//        } else {
-//            return ResponseEntity.ok(issuances);
-//        }
-//    }
-//
+
+    @GetMapping("/issuances/book/{bookId}")
+    public ResponseEntity<List<IssuancesOutDto>> findByBookId(@PathVariable int bookId) {
+        List<IssuancesOutDto> issuances = issuancesService.findByBookId(bookId);
+
+        if (issuances.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        } else {
+            return ResponseEntity.ok(issuances);
+        }
+    }
+
+    @GetMapping("/issuances/user/{userId}")
+    public ResponseEntity<List<IssuancesOutDto>> findByUserId(@PathVariable int userId) {
+        List<IssuancesOutDto> issuances = issuancesService.findByUserId(userId);
+
+        if (issuances.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        } else {
+            return ResponseEntity.ok(issuances);
+        }
+    }
 
     @PostMapping("/issuances")
     public ResponseEntity<IssuancesOutDto> addIssuance(@RequestBody IssuancesInDto issuancesInDto) {
@@ -78,14 +95,10 @@ public class IsuancesRestController {
         return ResponseEntity.ok(updatedIssuance);
     }
 
-//    @DeleteMapping("/issuances/id/{issuanceId}")
-//    public String removeIssuance(@PathVariable int issuanceId) {
-//
-//        IssuancesOutDto issuancesOutDto = issuancesService.findById(issuanceId);
-//
-//        issuancesService.deleteById(issuanceId);
-//
-//        return "Deleted issuance id: " + issuanceId;
-//    }
+    @GetMapping("/issuances/search/{keywords}")
+    public ResponseEntity<List<IssuancesOutDto>> searchPostByUserCredential(@PathVariable String keywords) {
+        List<IssuancesOutDto> issuancesOutDto = issuancesService.searchCredential(keywords);
+        return ResponseEntity.ok(issuancesOutDto);
+    }
 
 }

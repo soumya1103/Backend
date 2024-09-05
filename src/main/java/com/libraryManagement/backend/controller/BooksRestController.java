@@ -4,6 +4,10 @@ import com.libraryManagement.backend.dto.BooksInDto;
 import com.libraryManagement.backend.dto.BooksOutDto;
 import com.libraryManagement.backend.service.iBookService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,9 +21,19 @@ public class BooksRestController {
     private final iBookService bookService;
 
     @GetMapping("")
-    public List<BooksOutDto> findAll() {
-        return bookService.findAll();
+    public Page<BooksOutDto> getBooks(
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size
+    ){
+        Pageable pageable = PageRequest.of(page, size).withSort(Sort.by(Sort.Direction.DESC, "bookId"));
+        return bookService.getBooks(pageable);
     }
+
+    @GetMapping("/all")
+    public List<BooksOutDto> getAllBooks() {
+        return bookService.getAllBooks();
+    }
+
 
     @GetMapping("/category/{categoryName}")
     public ResponseEntity<List<BooksOutDto>> findByCategoryName(@PathVariable String categoryName) {
@@ -89,7 +103,12 @@ public class BooksRestController {
         bookService.deleteByBookTitle(bookTitle);
 
         return "Deleted book title: " + bookTitle;
+    }
 
+    @GetMapping("/search/{keywords}")
+    public ResponseEntity<List<BooksOutDto>> searchBooks(@PathVariable String keywords) {
+        List<BooksOutDto> booksOutDto = bookService.searchByBooks("%" + keywords + "%");
+        return ResponseEntity.ok(booksOutDto);
     }
 
 
