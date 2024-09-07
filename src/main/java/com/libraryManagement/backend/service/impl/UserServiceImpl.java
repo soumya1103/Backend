@@ -6,8 +6,9 @@ import com.libraryManagement.backend.dto.UsersOutDto;
 import com.libraryManagement.backend.entity.Users;
 import com.libraryManagement.backend.mapper.UsersMapper;
 import com.libraryManagement.backend.repository.UsersRepository;
-import com.libraryManagement.backend.service.iUserService;
 import io.jsonwebtoken.Claims;
+import com.libraryManagement.backend.service.iUserService;
+import com.libraryManagement.backend.service.iTwilioService;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,8 @@ public class UserServiceImpl implements iUserService {
 
     private final Environment env;
 
+    private final iTwilioService twilioService;
+
     @Override
     public Page<UsersOutDto> getUsersByRole(Pageable pageable, String role) {
         Page<Users> usersPage;
@@ -56,20 +59,34 @@ public class UserServiceImpl implements iUserService {
     }
 
     @Override
-    public Users save(Users users) {
-        System.out.println("Users" + users.toString());
-        String randomPassword = generateRandomPassword();
+    public UsersOutDto registerUser(UsersInDto usersInDto) {
+        Users users = UsersMapper.mapToUsersEntity(usersInDto);
+
         users.setRole("ROLE_USER");
+
+        String randomPassword = generateRandomPassword();
+
 
         // Encrypt the generated password
         String encryptedPassword = generatePassword(randomPassword);
-        users.setPassword(encryptedPassword);
+        users.setPassword("{bcrypt}" + encryptedPassword);
 
-        return usersRepository.save(users);
+        Users savedUser = usersRepository.save(users);
+
+        String message = String.format( "Welcome %s, You are registered to library BiblioSpace !!" +
+                        "Login credentials: " + " Usercredential: %s" + " Password: %s",
+                savedUser.getUserName(),
+                savedUser.getUserCredential(),
+                randomPassword);
+
+//        twilioService.sendSms(savedUser.getUserCredential(), message);
+
+        UsersOutDto usersOutDto = UsersMapper.mapToUsersOutDto(savedUser);
+        return usersOutDto;
     }
 
     private String generateRandomPassword() {
-        return RandomStringUtils.randomAlphanumeric(8);
+        return RandomStringUtils.randomAlphanumeric(10);
     }
 
 
@@ -156,6 +173,11 @@ public class UserServiceImpl implements iUserService {
     @Override
     public List<UsersOutDto> searchByUserCredential(String keywords) {
         List<Users> users = usersRepository.findByUserCredentialOrUserNameContaining("%" + keywords + "%");
-        return users.stream().map(UsersMapper::mapToUsersOutDto).toList();
+
+//        return users.stream().map(UsersMapper::mapToUsersOutDto).toList();1
+        return users.stream()
+                .filter(user -> "ROLE_USER".equals(user.getRole())) // Filter by role
+                .map(UsersMapper::mapToUsersOutDto)
+                .toList();
     }
 }

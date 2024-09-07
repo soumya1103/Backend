@@ -15,10 +15,9 @@ public interface CategoriesRepository extends JpaRepository<Categories, Integer>
 
     long count();
 
-    void deleteByCategoryName(String categoryName);
-
     Categories findByCategoryNameIgnoreCase(String categoryName);
 
     List<Categories> findByCategoryNameContaining(String category);
 
+    void deleteByCategoryName(String categoryName);
 }

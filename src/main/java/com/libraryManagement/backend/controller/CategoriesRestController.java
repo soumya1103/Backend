@@ -2,6 +2,7 @@ package com.libraryManagement.backend.controller;
 
 import com.libraryManagement.backend.dto.CategoriesInDto;
 import com.libraryManagement.backend.dto.CategoriesOutDto;
+import com.libraryManagement.backend.dto.response.ApiResponse;
 import com.libraryManagement.backend.entity.Categories;
 import com.libraryManagement.backend.service.iCategoriesService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,24 +26,32 @@ public class CategoriesRestController {
     private iCategoriesService categoriesService;
 
     @GetMapping("/all")
-    public List<CategoriesOutDto> getAllCategories() {
-        return categoriesService.getAllCategories();
+    public ResponseEntity<List<CategoriesOutDto>> getAllCategories() {
+        List<CategoriesOutDto> categories = categoriesService.getAllCategories();
+        return ResponseEntity.ok(categories);
     }
 
     @GetMapping("")
-    public Page<CategoriesOutDto> getCategories(
+    public ResponseEntity<Page<CategoriesOutDto>> getCategories(
             @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer size
             ){
+        if (page == null || size == null) {
+            return ResponseEntity.badRequest().body(null);
+        }
             Pageable pageable = PageRequest.of(page, size).withSort(Sort.by(Sort.Direction.DESC, "categoryId"));
-        return categoriesService.getCategories(pageable);
+        Page<CategoriesOutDto> categoriesPage = categoriesService.getCategories(pageable);
+        return ResponseEntity.ok(categoriesPage);
     }
 
     @GetMapping("/id/{categoryId}")
-    public Optional<CategoriesOutDto> getCategory(@PathVariable int categoryId) {
+    public ResponseEntity<?> getCategory(@PathVariable int categoryId) {
         Optional<CategoriesOutDto> categoriesOutDto = Optional.ofNullable(categoriesService.findById(categoryId));
-
-        return categoriesOutDto;
+        if (categoriesOutDto.isPresent()) {
+            return ResponseEntity.ok(categoriesOutDto.get());
+        } else {
+            return ResponseEntity.status(404).body(new ApiResponse(404, "Category not found."));
+        }
     }
 
     @GetMapping("/count")
@@ -50,55 +60,62 @@ public class CategoriesRestController {
     }
 
     @GetMapping("/name/{categoryName}")
-    public Categories getCategoryByName(@PathVariable String categoryName) {
-        Categories categoriesOutDto = categoriesService.findByCategoryNameIgnoreCase(categoryName);
-
-        return categoriesOutDto;
+    public ResponseEntity<?> getCategoryByName(@PathVariable String categoryName) {
+        Categories category = categoriesService.findByCategoryNameIgnoreCase(categoryName);
+        if (category != null) {
+            return ResponseEntity.status(HttpStatus.OK).body(category);
+        } else {
+            return ResponseEntity.status(404).body(new ApiResponse(404, "Category not found."));
+        }
     }
 
     @PostMapping("")
-    public Categories addCategory(@RequestBody Categories categories) {
+    public ResponseEntity<?> addCategory(@RequestBody Categories categories) {
         Categories dbCategory = categoriesService.save(categories);
-        return dbCategory;
+        return ResponseEntity.status(201).body(new ApiResponse(201, "Category saved successfully."));
     }
 
     @PutMapping("/id/{categoryId}")
-    public ResponseEntity<CategoriesOutDto> updateCategory(@PathVariable int categoryId, @RequestBody CategoriesInDto categoriesInDto) {
-        categoriesInDto.setCategoryId(categoryId);
-        CategoriesOutDto updatedCategory = categoriesService.updateCategory(categoriesInDto);
-
-        return ResponseEntity.ok(updatedCategory);
+    public ResponseEntity<?> updateCategory(@PathVariable int categoryId, @RequestBody CategoriesInDto categoriesInDto) {
+        try {
+            categoriesInDto.setCategoryId(categoryId);
+            CategoriesOutDto updatedCategory = categoriesService.updateCategory(categoriesInDto);
+            return ResponseEntity.ok(new ApiResponse(200,"Category updated successfully."));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        }
     }
 
     @PutMapping("/name/{categoryName}")
-    public ResponseEntity<CategoriesOutDto> updateCategoryByName(
+    public ResponseEntity<?> updateCategoryByName(
             @PathVariable String categoryName,
             @RequestBody CategoriesInDto categoriesInDto) {
-        CategoriesOutDto updatedCategory = categoriesService.updateCategoryByName(categoryName, categoriesInDto);
-        return ResponseEntity.ok(updatedCategory);
+        try {
+            CategoriesOutDto updatedCategory = categoriesService.updateCategoryByName(categoryName, categoriesInDto);
+            return ResponseEntity.ok(new ApiResponse(200,"Category updated successfully."));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        }
     }
 
     @DeleteMapping("/id/{categoryId}")
-    public String removeCategory(@PathVariable int categoryId) {
-
-        Optional<CategoriesOutDto> categoriesOutDto = Optional.ofNullable(categoriesService.findById(categoryId));
-        if (categoriesOutDto.isEmpty()) {
-            throw new RuntimeException("Category not found: " + categoryId);
+    public ResponseEntity<?> removeCategory(@PathVariable int categoryId) {
+        try {
+            categoriesService.deleteById(categoryId);
+            return ResponseEntity.ok("Category deleted successfully.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
         }
-        categoriesService.deleteById(categoryId);
-
-        return "Deleted category successfully";
     }
-
     @DeleteMapping("/name/{categoryName}")
-    public String deleteByCategoryName(@PathVariable String categoryName) {
+    public ResponseEntity<?> deleteByCategoryName(@PathVariable String categoryName) {
         Categories categories = categoriesService.findByCategoryNameIgnoreCase(categoryName);
         if (categories == null) {
             throw new RuntimeException("Category not found: " + categoryName);
         }
         categoriesService.deleteById(categories.getCategoryId());
 
-        return "Deleted category successfully";
+        return ResponseEntity.ok(new ApiResponse(200, "Category deleted successfully"));
     }
 
     @GetMapping("/search/{keywords}")

@@ -26,9 +26,9 @@ public interface iCategoriesService {
 
     long getCategoryCount();
 
-    void deleteByCategoryName(String categoryName);
-
     List<CategoriesOutDto> getAllCategories();
 
     List<CategoriesOutDto> searchCategories(String keyword);
+
+    void deleteByCategoryName(String categoryName);
 }

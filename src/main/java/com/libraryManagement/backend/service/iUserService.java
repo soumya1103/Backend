@@ -3,7 +3,6 @@ package com.libraryManagement.backend.service;
 
 import com.libraryManagement.backend.dto.UsersInDto;
 import com.libraryManagement.backend.dto.UsersOutDto;
-import com.libraryManagement.backend.entity.Users;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -16,7 +15,9 @@ public interface iUserService {
 
     Optional<UsersOutDto> findById(int theId);
 
-    Users save(Users users);
+//    Users save(Users users);
+
+    UsersOutDto registerUser(UsersInDto usersInDto);
 
     UsersOutDto updateUser(UsersInDto usersInDto);
 

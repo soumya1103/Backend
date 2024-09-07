@@ -47,7 +47,7 @@ public class ProjectSecurityConfig {
 
         http.authorizeHttpRequests((requests) -> requests
 //                Other routes
-                        .requestMatchers("/lms/login", "/lms/error").permitAll()
+                        .requestMatchers("/lms/login", "/error").permitAll()
                         .requestMatchers("/lms/users").hasRole("ADMIN")
                         .requestMatchers("/lms/current-user").authenticated()
 

@@ -2,7 +2,6 @@ package com.libraryManagement.backend.controller;
 
 import com.libraryManagement.backend.dto.UsersInDto;
 import com.libraryManagement.backend.dto.UsersOutDto;
-import com.libraryManagement.backend.entity.Users;
 import com.libraryManagement.backend.service.iUserService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -57,19 +56,19 @@ public class UsersRestController {
         return ResponseEntity.ok(usersOutDto);
     }
 
-    @PostMapping("/admin")
-    public Users addAdmin(@RequestBody Users users){
-        users.setRole("ROLE_ADMIN");
-        Users dbAdmin = usersService.save(users);
-
-        return  dbAdmin;
-    }
+//    @PostMapping("/admin")
+//    public Users addAdmin(@RequestBody Users users){
+//        users.setRole("ROLE_ADMIN");
+//        Users dbAdmin = usersService.save(users);
+//
+//        return  dbAdmin;
+//    }
 
     @PostMapping("/user")
-    public Users addUser(@RequestBody Users users){
-        Users dbUser = usersService.save(users);
+    public UsersOutDto addUser(@RequestBody UsersInDto usersInDto){
+        UsersOutDto savedUser = usersService.registerUser(usersInDto);
 
-        return  dbUser;
+        return  savedUser;
     }
 
     @PutMapping("/id/{userId}")

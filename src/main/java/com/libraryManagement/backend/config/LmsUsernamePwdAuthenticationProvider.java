@@ -22,7 +22,12 @@ public class LmsUsernamePwdAuthenticationProvider implements AuthenticationProvi
         String username = authentication.getName();
         String pwd = authentication.getCredentials().toString();
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-        return new UsernamePasswordAuthenticationToken(username,pwd,userDetails.getAuthorities());
+                if (passwordEncoder.matches(pwd, userDetails.getPassword())) {
+            return new UsernamePasswordAuthenticationToken(username, pwd, userDetails.getAuthorities());
+        } else {
+            throw new RuntimeException("Invalid password!");
+        }
+
     }
 
     @Override

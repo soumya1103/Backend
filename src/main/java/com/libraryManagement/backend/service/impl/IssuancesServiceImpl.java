@@ -10,6 +10,7 @@ import com.libraryManagement.backend.repository.BooksRepository;
 import com.libraryManagement.backend.repository.IssuancesRepository;
 import com.libraryManagement.backend.repository.UsersRepository;
 import com.libraryManagement.backend.service.iIssuancesService;
+import com.libraryManagement.backend.service.iTwilioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,6 +33,12 @@ public class IssuancesServiceImpl implements iIssuancesService {
 
     @Autowired
     private UsersRepository usersRepository;
+
+    private final iTwilioService twilioService;
+
+    public IssuancesServiceImpl(iTwilioService twilioService) {
+        this.twilioService = twilioService;
+    }
 
     @Override
     public Page<IssuancesOutDto> getIssuances(Pageable pageable) {
@@ -63,6 +70,15 @@ public class IssuancesServiceImpl implements iIssuancesService {
         issuances.setIssueDate(LocalDateTime.now());
         issuances.setStatus("Issued");
         issuances = issuancesRepository.save(issuances);
+
+
+        String message = String.format("Issued book: '%s'" + " Author name: '%s'",
+                issuances.getBooks().getBookTitle(),
+                issuances.getBooks().getBookAuthor());
+
+//        if (issuances.getIssuanceType() == "Remote") {
+//        twilioService.sendSms(issuances.getUsers().getUserCredential(), message);
+//        }
 
         return IssuancesMapper.mapToIssuancesDto(issuances);
     }
