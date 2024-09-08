@@ -2,14 +2,12 @@ package com.libraryManagement.backend.service.impl;
 
 import com.libraryManagement.backend.dto.BooksInDto;
 import com.libraryManagement.backend.dto.BooksOutDto;
-import com.libraryManagement.backend.dto.UsersOutDto;
 import com.libraryManagement.backend.entity.Books;
 import com.libraryManagement.backend.entity.Categories;
-import com.libraryManagement.backend.entity.Users;
 import com.libraryManagement.backend.mapper.BooksMapper;
-import com.libraryManagement.backend.mapper.UsersMapper;
 import com.libraryManagement.backend.repository.BooksRepository;
 import com.libraryManagement.backend.repository.CategoriesRepository;
+import com.libraryManagement.backend.repository.IssuancesRepository;
 import com.libraryManagement.backend.service.iBookService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -28,6 +26,12 @@ public class BookServiceImpl implements iBookService {
 
     @Autowired
     private CategoriesRepository categoriesRepository;
+
+    private final IssuancesRepository issuancesRepository;
+
+    public BookServiceImpl (IssuancesRepository issuancesRepository) {
+        this.issuancesRepository = issuancesRepository;
+    }
 
     @Override
     public Page<BooksOutDto> getBooks(Pageable pageable) {
@@ -183,6 +187,11 @@ public class BookServiceImpl implements iBookService {
     public List<BooksOutDto> searchByBooks(String keywords) {
         List<Books> books = booksRepository.findByBookTitleOrBookAuthorContaining("%" + keywords + "%");
         return books.stream().map(BooksMapper::mapToBooksDto).toList();
+    }
+
+    @Override
+    public boolean isBookIssued(int bookId) {
+            return issuancesRepository.existsByBooksBookIdAndStatus(bookId, "Issued");
     }
 
 }

@@ -32,4 +32,6 @@ public interface iBookService {
     List<BooksOutDto> getAllBooks();
 
     List<BooksOutDto> searchByBooks(String keywords);
+
+    boolean isBookIssued(int bookId);
 }

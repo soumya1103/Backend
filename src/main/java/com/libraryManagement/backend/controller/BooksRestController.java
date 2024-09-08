@@ -2,6 +2,7 @@ package com.libraryManagement.backend.controller;
 
 import com.libraryManagement.backend.dto.BooksInDto;
 import com.libraryManagement.backend.dto.BooksOutDto;
+import com.libraryManagement.backend.dto.response.ApiResponse;
 import com.libraryManagement.backend.service.iBookService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -21,26 +22,29 @@ public class BooksRestController {
     private final iBookService bookService;
 
     @GetMapping("")
-    public Page<BooksOutDto> getBooks(
+    public ResponseEntity<?> getBooks(
             @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer size
-    ){
+    ) {
         Pageable pageable = PageRequest.of(page, size).withSort(Sort.by(Sort.Direction.DESC, "bookId"));
-        return bookService.getBooks(pageable);
+        Page<BooksOutDto> booksPage = bookService.getBooks(pageable);
+
+        return ResponseEntity.ok(booksPage);
     }
 
     @GetMapping("/all")
-    public List<BooksOutDto> getAllBooks() {
-        return bookService.getAllBooks();
+    public ResponseEntity<List<BooksOutDto>> getAllBooks() {
+        List<BooksOutDto> booksList = bookService.getAllBooks();
+        return ResponseEntity.ok(booksList);
     }
 
 
     @GetMapping("/category/{categoryName}")
-    public ResponseEntity<List<BooksOutDto>> findByCategoryName(@PathVariable String categoryName) {
+    public ResponseEntity<?> findByCategoryName(@PathVariable String categoryName) {
         List<BooksOutDto> booksOutDtoList = bookService.findByCategoryName(categoryName);
 
         if (booksOutDtoList.isEmpty()) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(404).body(new ApiResponse(404, "Category not found."));
         } else {
             return ResponseEntity.ok(booksOutDtoList);
         }
@@ -68,41 +72,58 @@ public class BooksRestController {
     }
 
     @PostMapping("")
-    public ResponseEntity<BooksOutDto> addBook(@RequestBody BooksInDto booksInDto) {
+    public ResponseEntity<?> addBook(@RequestBody BooksInDto booksInDto) {
         BooksOutDto booksOutDto = bookService.saveBooks(booksInDto);
-        return ResponseEntity.ok(booksOutDto);
+        return ResponseEntity.status(201).body(new ApiResponse(201, "Book added successfully!"));
     }
 
     @PutMapping("/id/{bookId}")
-    public ResponseEntity<BooksOutDto> updateBook(@PathVariable int bookId, @RequestBody BooksInDto booksInDto) {
-        BooksOutDto updatedBook = bookService.updateBooks(bookId, booksInDto);
-        return ResponseEntity.ok(updatedBook);
+    public ResponseEntity<?> updateBook(@PathVariable int bookId, @RequestBody BooksInDto booksInDto) {
+        try {
+            BooksOutDto updatedBook = bookService.updateBooks(bookId, booksInDto);
+            return ResponseEntity.ok(new ApiResponse(200, "Book updated successfully."));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        }
     }
 
     @PutMapping("/title/{bookTitle}")
-    public ResponseEntity<BooksOutDto> updateBook(@PathVariable String bookTitle, @RequestBody BooksInDto booksInDto) {
-        BooksOutDto updatedBook = bookService.updateBooksByTitle(bookTitle, booksInDto);
-        return ResponseEntity.ok(updatedBook);
+    public ResponseEntity<?> updateBook(@PathVariable String bookTitle, @RequestBody BooksInDto booksInDto) {
+        try {
+            BooksOutDto updatedBook = bookService.updateBooksByTitle(bookTitle, booksInDto);
+            return ResponseEntity.ok(new ApiResponse(200, "Book updated successfully."));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        }
     }
 
     @DeleteMapping("/id/{bookId}")
-    public String removeBook(@PathVariable int bookId) {
+    public ResponseEntity<?> removeBook(@PathVariable int bookId) {
+        try {
+            if (bookService.isBookIssued(bookId)) {
+                return ResponseEntity.status(400).body(new ApiResponse(400, "Book cannot be deleted as it is currently issued."));
+            }
+            BooksOutDto booksOutDto = bookService.findById(bookId);
+            bookService.deleteById(bookId);
+            return ResponseEntity.ok(new ApiResponse(200,"Book deleted successfully."));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        }
 
-        BooksOutDto booksOutDto = bookService.findById(bookId);
-
-        bookService.deleteById(bookId);
-
-        return "Deleted book id: " + bookId;
     }
 
     @DeleteMapping("/title/{bookTitle}")
-    public String deleteByBookTitle(@PathVariable String bookTitle) {
-
+    public ResponseEntity<?> deleteByBookTitle(@PathVariable String bookTitle) {
+        try {
         BooksOutDto booksOutDto = bookService.findByBookTitle(bookTitle);
-
+            if (bookService.isBookIssued(booksOutDto.getBookId())) {
+                return ResponseEntity.status(400).body(new ApiResponse(400, "Book cannot be deleted as it is currently issued."));
+            }
         bookService.deleteByBookTitle(bookTitle);
-
-        return "Deleted book title: " + bookTitle;
+            return ResponseEntity.ok(new ApiResponse(200,"Book deleted successfully."));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        }
     }
 
     @GetMapping("/search/{keywords}")
@@ -110,7 +131,6 @@ public class BooksRestController {
         List<BooksOutDto> booksOutDto = bookService.searchByBooks("%" + keywords + "%");
         return ResponseEntity.ok(booksOutDto);
     }
-
 
 
 }

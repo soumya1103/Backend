@@ -2,6 +2,7 @@ package com.libraryManagement.backend.controller;
 
 import com.libraryManagement.backend.dto.IssuancesInDto;
 import com.libraryManagement.backend.dto.IssuancesOutDto;
+import com.libraryManagement.backend.dto.response.ApiResponse;
 import com.libraryManagement.backend.service.iIssuancesService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,81 +25,121 @@ public class IsuancesRestController {
     }
 
     @GetMapping("/issuances")
-    public Page<IssuancesOutDto> getIssuances(
+    public ResponseEntity<Page<IssuancesOutDto>> getIssuances(
             @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer size
     ){
-        Pageable pageable = PageRequest.of(page, size).withSort(Sort.by(Sort.Direction.DESC, "issuanceId"));
-        return issuancesService.getIssuances(pageable);
+        try {
+            Pageable pageable = PageRequest.of(page, size).withSort(Sort.by(Sort.Direction.DESC, "issuanceId"));
+            Page<IssuancesOutDto> issuances = issuancesService.getIssuances(pageable);
+            return ResponseEntity.ok(issuances);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(null);
+        }
     }
 
     @GetMapping("/issuances/id/{issuanceId}")
-    public ResponseEntity<IssuancesOutDto> getIssuances(@PathVariable int issuanceId) {
-        IssuancesOutDto issuancesOutDto = issuancesService.findById(issuanceId);
-
-        return ResponseEntity.ok(issuancesOutDto);
+    public ResponseEntity<?> getIssuances(@PathVariable int issuanceId) {
+        try {
+            IssuancesOutDto issuancesOutDto = issuancesService.findById(issuanceId);
+            if (issuancesOutDto != null) {
+                return ResponseEntity.ok(issuancesOutDto);
+            } else {
+                return ResponseEntity.status(404).body(new ApiResponse(404,"Issuance not found."));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error retrieving issuance.");
+        }
     }
 
     @GetMapping("/issuances/type")
-    public List<IssuancesOutDto> findByIssuanceType() {
-        return issuancesService.getIssuanceByIssuanceType("Inhouse");
+    public ResponseEntity<?> findByIssuanceType() {
+        try {
+            List<IssuancesOutDto> issuances = issuancesService.getIssuanceByIssuanceType("Inhouse");
+            return ResponseEntity.ok(issuances);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error retrieving issuance by type.");
+        }
     }
 
     @GetMapping("/issuances/type/count")
-    public ResponseEntity<Long> getIssuanceByTypeCount() {
-        return ResponseEntity.ok(issuancesService.getIssuanceCountByType());
+    public ResponseEntity<?> getIssuanceByTypeCount() {
+        try {
+            Long count = issuancesService.getIssuanceCountByType();
+            return ResponseEntity.ok(count);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error retrieving issuance count.");
+        }
     }
 
     @GetMapping("/issuance/user/{userCredential}")
-    public ResponseEntity<List<IssuancesOutDto>> getByUserCredential(@PathVariable String userCredential) {
-        List<IssuancesOutDto> issuances = issuancesService.getIssuanceByUserCredential(userCredential);
-
-        if (issuances.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        } else {
+    public ResponseEntity<?> getByUserCredential(@PathVariable String userCredential) {
+        try {
+            List<IssuancesOutDto> issuances = issuancesService.getIssuanceByUserCredential(userCredential);
+            if (issuances.isEmpty()) {
+                return ResponseEntity.status(404).body(new ApiResponse(404,"No issuances found."));
+            }
             return ResponseEntity.ok(issuances);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error retrieving issuances for user.");
         }
     }
 
     @GetMapping("/issuances/book/{bookId}")
-    public ResponseEntity<List<IssuancesOutDto>> findByBookId(@PathVariable int bookId) {
-        List<IssuancesOutDto> issuances = issuancesService.findByBookId(bookId);
-
-        if (issuances.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        } else {
+    public ResponseEntity<?> findByBookId(@PathVariable int bookId) {
+        try {
+            List<IssuancesOutDto> issuances = issuancesService.findByBookId(bookId);
+            if (issuances.isEmpty()) {
+                return ResponseEntity.status(404).body(new ApiResponse(404, "No issuances found."));
+            }
             return ResponseEntity.ok(issuances);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error retrieving issuances for book.");
         }
     }
 
     @GetMapping("/issuances/user/{userId}")
-    public ResponseEntity<List<IssuancesOutDto>> findByUserId(@PathVariable int userId) {
-        List<IssuancesOutDto> issuances = issuancesService.findByUserId(userId);
-
-        if (issuances.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        } else {
+    public ResponseEntity<?> findByUserId(@PathVariable int userId) {
+        try {
+            List<IssuancesOutDto> issuances = issuancesService.findByUserId(userId);
+            if (issuances.isEmpty()) {
+                return ResponseEntity.status(404).body(new ApiResponse(404,"No issuances found."));
+            }
             return ResponseEntity.ok(issuances);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error retrieving issuances for user.");
         }
     }
 
     @PostMapping("/issuances")
-    public ResponseEntity<IssuancesOutDto> addIssuance(@RequestBody IssuancesInDto issuancesInDto) {
-        IssuancesOutDto issuancesOutDto = issuancesService.saveIssuances(issuancesInDto);
-
-        return ResponseEntity.ok(issuancesOutDto);
+    public ResponseEntity<?> addIssuance(@RequestBody IssuancesInDto issuancesInDto) {
+        try {
+            IssuancesOutDto issuancesOutDto = issuancesService.saveIssuances(issuancesInDto);
+            return ResponseEntity.status(201).body(new ApiResponse(201, "Issuance created successfully."));
+        } catch (Exception e) {
+            return ResponseEntity.status(400).body(new ApiResponse(400,"Error creating issuance"));
+        }
     }
 
     @PutMapping("/issuances/id/{issuanceId}")
-    public ResponseEntity<IssuancesOutDto> updateIssuance(@PathVariable int issuanceId, @RequestBody IssuancesInDto issuancesInDto) {
-        IssuancesOutDto updatedIssuance = issuancesService.updateIssuance(issuanceId, issuancesInDto);
-        return ResponseEntity.ok(updatedIssuance);
+    public ResponseEntity<?> updateIssuance(@PathVariable int issuanceId, @RequestBody IssuancesInDto issuancesInDto) {
+        try {
+            IssuancesOutDto updatedIssuance = issuancesService.updateIssuance(issuanceId, issuancesInDto);
+            return ResponseEntity.status(200).body(new ApiResponse(200, "Issuance updated successfully."));
+        } catch (Exception e) {
+            return ResponseEntity.status(400).body(new ApiResponse(400,"Error updating issuance."));
+        }
+
     }
 
     @GetMapping("/issuances/search/{keywords}")
-    public ResponseEntity<List<IssuancesOutDto>> searchPostByUserCredential(@PathVariable String keywords) {
-        List<IssuancesOutDto> issuancesOutDto = issuancesService.searchCredential(keywords);
-        return ResponseEntity.ok(issuancesOutDto);
+    public ResponseEntity<?> searchPostByUserCredential(@PathVariable String keywords) {
+        try {
+            List<IssuancesOutDto> issuancesOutDto = issuancesService.searchCredential(keywords);
+            return ResponseEntity.ok(issuancesOutDto);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error searching issuances.");
+        }
     }
 
 }

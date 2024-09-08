@@ -3,7 +3,6 @@ package com.libraryManagement.backend.controller;
 import com.libraryManagement.backend.constants.JwtConstants;
 import com.libraryManagement.backend.dto.auth.LoginInDto;
 import com.libraryManagement.backend.dto.auth.LoginOutDto;
-import com.libraryManagement.backend.dto.response.ResponseDto;
 import com.libraryManagement.backend.service.iAuthenticationService;
 import com.libraryManagement.backend.service.iUserService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -40,7 +39,7 @@ public class AuthenticationController {
         if (loginOutDto != null) {
             return ResponseEntity.status(HttpStatus.OK).body(loginOutDto);
         } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ResponseDto(HttpStatus.UNAUTHORIZED.toString(), "Invalid token"));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
         }
     }
 }

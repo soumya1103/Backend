@@ -76,6 +76,7 @@ public class IssuancesServiceImpl implements iIssuancesService {
                 issuances.getBooks().getBookTitle(),
                 issuances.getBooks().getBookAuthor());
 
+        System.out.println(issuances.getIssuanceType());
 //        if (issuances.getIssuanceType() == "Remote") {
 //        twilioService.sendSms(issuances.getUsers().getUserCredential(), message);
 //        }

@@ -102,16 +102,17 @@ public class CategoriesRestController {
     public ResponseEntity<?> removeCategory(@PathVariable int categoryId) {
         try {
             categoriesService.deleteById(categoryId);
-            return ResponseEntity.ok("Category deleted successfully.");
+            return ResponseEntity.ok(new ApiResponse(200,"Category deleted successfully."));
         } catch (RuntimeException e) {
             return ResponseEntity.status(404).body(e.getMessage());
         }
     }
+
     @DeleteMapping("/name/{categoryName}")
     public ResponseEntity<?> deleteByCategoryName(@PathVariable String categoryName) {
         Categories categories = categoriesService.findByCategoryNameIgnoreCase(categoryName);
         if (categories == null) {
-            throw new RuntimeException("Category not found: " + categoryName);
+            return ResponseEntity.status(404).body(new ApiResponse(404,"Category not found"));
         }
         categoriesService.deleteById(categories.getCategoryId());
 

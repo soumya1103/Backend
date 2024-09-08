@@ -1,7 +1,10 @@
 package com.libraryManagement.backend.controller;
 
+import com.libraryManagement.backend.dto.IssuancesOutDto;
 import com.libraryManagement.backend.dto.UsersInDto;
 import com.libraryManagement.backend.dto.UsersOutDto;
+import com.libraryManagement.backend.dto.response.ApiResponse;
+import com.libraryManagement.backend.service.iIssuancesService;
 import com.libraryManagement.backend.service.iUserService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,29 +23,40 @@ public class UsersRestController {
 
     private iUserService usersService;
 
-    public UsersRestController(iUserService usersService) {
+    private iIssuancesService issuancesService;
+
+    public UsersRestController(iUserService usersService, iIssuancesService issuancesService) {
         this.usersService = usersService;
+        this.issuancesService = issuancesService;
     }
 
     @GetMapping("/all")
-    public List<UsersOutDto> getAllUsersByRole() {
-        return usersService.getAllUsersByRole("ROLE_USER");
+    public ResponseEntity<List<UsersOutDto>> getAllUsersByRole() {
+        List<UsersOutDto> usersList = usersService.getAllUsersByRole("ROLE_USER");
+        if (usersList.isEmpty()) {
+            return ResponseEntity.status(404).body(null);
+        }
+        return ResponseEntity.ok(usersList);
     }
 
     @GetMapping("")
-    public Page<UsersOutDto> getUsersByRole(
+    public ResponseEntity<Page<UsersOutDto>> getUsersByRole(
             @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer size
     ){
         Pageable pageable = PageRequest.of(page, size).withSort(Sort.by(Sort.Direction.DESC, "userId"));
-        return usersService.getUsersByRole(pageable, "ROLE_USER");
+        Page<UsersOutDto> usersPage = usersService.getUsersByRole(pageable, "ROLE_USER");
+        return ResponseEntity.ok(usersPage);
     }
 
     @GetMapping("/{userId}")
-    public Optional<UsersOutDto> getUser(@PathVariable int userId) {
+    public ResponseEntity<?> getUser(@PathVariable int userId) {
         Optional<UsersOutDto> usersOutDto = usersService.findById(userId);
-
-        return usersOutDto;
+        if (usersOutDto.isEmpty()) {
+            return ResponseEntity.status(404)
+                    .body(new ApiResponse(404,"User not found."));
+        }
+        return ResponseEntity.ok(usersOutDto.get());
     }
 
     @GetMapping("/count")
@@ -51,47 +65,59 @@ public class UsersRestController {
     }
 
     @GetMapping("/credential/{userCredential}")
-    public ResponseEntity<UsersOutDto> getUserByUserCredential(@PathVariable String userCredential) {
+    public ResponseEntity<?> getUserByUserCredential(@PathVariable String userCredential) {
         UsersOutDto usersOutDto = usersService.getUserByUserCredential(userCredential);
+        if (usersOutDto == null) {
+            return ResponseEntity.status(404).body(new ApiResponse(404,"User not found with credentials."));
+        }
         return ResponseEntity.ok(usersOutDto);
     }
 
-//    @PostMapping("/admin")
-//    public Users addAdmin(@RequestBody Users users){
-//        users.setRole("ROLE_ADMIN");
-//        Users dbAdmin = usersService.save(users);
-//
-//        return  dbAdmin;
-//    }
-
     @PostMapping("/user")
-    public UsersOutDto addUser(@RequestBody UsersInDto usersInDto){
+    public ResponseEntity<?> addUser(@RequestBody UsersInDto usersInDto){
         UsersOutDto savedUser = usersService.registerUser(usersInDto);
-
-        return  savedUser;
+        if (savedUser == null) {
+            return ResponseEntity.status(500)
+                    .body(new ApiResponse(500,"User could not be registered"));
+        }
+        return ResponseEntity.status(201).body(new ApiResponse(201,"User registered successfully."));
     }
 
     @PutMapping("/id/{userId}")
-    public ResponseEntity<UsersOutDto> updateUser(@PathVariable int userId, @RequestBody UsersInDto usersInDto) {
+    public ResponseEntity<?> updateUser(@PathVariable int userId, @RequestBody UsersInDto usersInDto) {
         usersInDto.setUserId(userId);
         UsersOutDto updatedUser = usersService.updateUser(usersInDto);
+        if (updatedUser == null) {
+            return ResponseEntity.status(404).body(new ApiResponse(404, "User not found"));
+        }
+        return ResponseEntity.ok(new ApiResponse(200,"User updated successfully."));
 
-        return ResponseEntity.ok(updatedUser);
     }
 
     @DeleteMapping("/id/{userId}")
-    public String removeUser(@PathVariable int userId) {
+    public ResponseEntity<?> removeUser(@PathVariable int userId) {
         Optional<UsersOutDto> users = usersService.findById(userId);
         if (users.isEmpty()) {
-            throw new RuntimeException("Employee id not found: " + userId);
+            return ResponseEntity.status(404).body(new ApiResponse(404,"User not found"));
         }
+        List<IssuancesOutDto> userIssuances = issuancesService.findByUserId(userId);
+        boolean hasIssuedBooks = userIssuances.stream()
+                .anyMatch(issuance -> "Issued".equalsIgnoreCase(issuance.getStatus()));
+
+        if (hasIssuedBooks) {
+            return ResponseEntity.status(400).body(new ApiResponse(400, "User cannot be deleted because they have issued books."));
+        }
+
         usersService.deleteById(userId);
-        return "Deleted employee id: " + userId;
+        return ResponseEntity.ok(new ApiResponse(200,"User deleted successfully."));
     }
 
     @GetMapping("/search/{keywords}")
-    public ResponseEntity<List<UsersOutDto>> searchUserByUserCredential(@PathVariable String keywords) {
+    public ResponseEntity<?> searchUserByUserCredential(@PathVariable String keywords) {
         List<UsersOutDto> usersOutDto = usersService.searchByUserCredential(keywords);
+        if (usersOutDto.isEmpty()) {
+            return ResponseEntity.status(404).body(new ApiResponse(404,"No users found."));
+        }
         return ResponseEntity.ok(usersOutDto);
     }
 }
