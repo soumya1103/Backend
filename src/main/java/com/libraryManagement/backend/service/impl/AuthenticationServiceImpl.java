@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,13 +39,13 @@ public class AuthenticationServiceImpl implements iAuthenticationService {
 
     @Override
     public LoginOutDto login(LoginInDto loginInDto) {
-//        System.out.println("Login service called");
-//        String encodedPassword = loginInDto.getPassword();
-//        byte[] decodedBytes = Base64.getDecoder().decode(encodedPassword);
-//        String decodedPassword = new String(decodedBytes);
-//        loginInDto.setPassword(decodedPassword);
+        System.out.println("Login service called");
+        String encodedPassword = loginInDto.getPassword();
+        byte[] decodedBytes = Base64.getDecoder().decode(encodedPassword);
+        String decodedPassword = new String(decodedBytes);
+        loginInDto.setPassword(decodedPassword);
 
-//        System.out.println(loginInDto);
+        System.out.println(loginInDto);
 
         String jwt = "";
         Authentication authentication = UsernamePasswordAuthenticationToken.unauthenticated(loginInDto.getUserCredential(),

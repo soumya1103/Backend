@@ -2,9 +2,13 @@ package com.libraryManagement.backend.service.impl;
 
 import com.libraryManagement.backend.dto.CategoriesInDto;
 import com.libraryManagement.backend.dto.CategoriesOutDto;
+import com.libraryManagement.backend.entity.Books;
 import com.libraryManagement.backend.entity.Categories;
+import com.libraryManagement.backend.exception.ResourceAlreadyExistsException;
 import com.libraryManagement.backend.mapper.CategoriesMapper;
+import com.libraryManagement.backend.repository.BooksRepository;
 import com.libraryManagement.backend.repository.CategoriesRepository;
+import com.libraryManagement.backend.repository.IssuancesRepository;
 import com.libraryManagement.backend.service.iCategoriesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -19,6 +23,12 @@ public class CategoriesServiceImpl implements iCategoriesService {
 
     @Autowired
     private CategoriesRepository categoriesRepository;
+
+    @Autowired
+    private BooksRepository booksRepository;
+
+    @Autowired
+    private IssuancesRepository issuancesRepository;
 
     @Override
     public Page<CategoriesOutDto> getCategories(Pageable pageable) {
@@ -46,8 +56,15 @@ public class CategoriesServiceImpl implements iCategoriesService {
 
     @Override
     public Categories save(Categories categories) {
+        Categories existingCategory = categoriesRepository.findByCategoryNameIgnoreCase(categories.getCategoryName());
+
+        if (existingCategory != null) {
+            throw new ResourceAlreadyExistsException("Duplicate entry.");
+        }
+
         return categoriesRepository.save(categories);
     }
+
 
     @Override
     public CategoriesOutDto updateCategory(CategoriesInDto categoriesInDto) {
@@ -60,6 +77,11 @@ public class CategoriesServiceImpl implements iCategoriesService {
         Categories categoryToUpdate = categoriesOptional.get();
 
         if (categoriesInDto.getCategoryName() != null && !categoriesInDto.getCategoryName().isEmpty()) {
+            Categories existingCategory = categoriesRepository.findByCategoryNameIgnoreCase(categoriesInDto.getCategoryName());
+
+            if (existingCategory != null) {
+                throw new ResourceAlreadyExistsException("Duplicate entry.");
+            }
             categoryToUpdate.setCategoryName(categoriesInDto.getCategoryName());
         }
 
@@ -77,38 +99,26 @@ public class CategoriesServiceImpl implements iCategoriesService {
     }
 
     @Override
-    public CategoriesOutDto updateCategoryByName(String categoryName, CategoriesInDto categoryInDto) {
-        Categories category = categoriesRepository.findByCategoryNameIgnoreCase(categoryName);
+    public void deleteById(int categoryId) {
+        Categories category = categoriesRepository.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Category not found"));
 
-        if (category != null) {
-            if (categoryInDto.getCategoryName() != null && !categoryInDto.getCategoryName().isEmpty()) {
-                category.setCategoryName(categoryInDto.getCategoryName());
+        List<Books> booksInCategory = booksRepository.findByCategoryName(category.getCategoryName());
+
+        for (Books book : booksInCategory) {
+            if (issuancesRepository.existsByBooksBookIdAndStatus(book.getBookId(), "Issued")) {
+                throw new RuntimeException("Cannot delete category because a book from this category is currently issued.");
             }
-
-            if (categoryInDto.getCategoryIcon() != null && !categoryInDto.getCategoryIcon().isEmpty()) {
-                category.setCategoryIcon(categoryInDto.getCategoryIcon());
-            }
-
-            Categories updatedCategory = categoriesRepository.save(category);
-            return CategoriesMapper.mapToCategoriesDto(updatedCategory);
         }
 
-        return null;
-    }
+        booksRepository.deleteAll(booksInCategory);
 
-    @Override
-    public void deleteById(int categoryId) {
         categoriesRepository.deleteById(categoryId);
     }
 
     @Override
     public long getCategoryCount() {
         return categoriesRepository.count();
-    }
-
-    @Override
-    public void deleteByCategoryName(String categoryName) {
-        categoriesRepository.deleteByCategoryName(categoryName);
     }
 
     @Override

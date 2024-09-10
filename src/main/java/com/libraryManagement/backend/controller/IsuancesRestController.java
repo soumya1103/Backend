@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,7 +26,7 @@ public class IsuancesRestController {
     }
 
     @GetMapping("/issuances")
-    public ResponseEntity<Page<IssuancesOutDto>> getIssuances(
+    public ResponseEntity<?> getIssuances(
             @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer size
     ){
@@ -34,7 +35,7 @@ public class IsuancesRestController {
             Page<IssuancesOutDto> issuances = issuancesService.getIssuances(pageable);
             return ResponseEntity.ok(issuances);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(null);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse(HttpStatus.BAD_REQUEST, e.getMessage()));
         }
     }
 
@@ -45,10 +46,10 @@ public class IsuancesRestController {
             if (issuancesOutDto != null) {
                 return ResponseEntity.ok(issuancesOutDto);
             } else {
-                return ResponseEntity.status(404).body(new ApiResponse(404,"Issuance not found."));
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiResponse(HttpStatus.CONFLICT,"Issuance not found."));
             }
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("Error retrieving issuance.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse(HttpStatus.BAD_REQUEST,"Error retrieving issuance."));
         }
     }
 
@@ -58,7 +59,7 @@ public class IsuancesRestController {
             List<IssuancesOutDto> issuances = issuancesService.getIssuanceByIssuanceType("Inhouse");
             return ResponseEntity.ok(issuances);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("Error retrieving issuance by type.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse(HttpStatus.BAD_REQUEST,"Error retrieving issuance by type."));
         }
     }
 
@@ -68,7 +69,7 @@ public class IsuancesRestController {
             Long count = issuancesService.getIssuanceCountByType();
             return ResponseEntity.ok(count);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("Error retrieving issuance count.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse(HttpStatus.BAD_REQUEST,"Error retrieving issuance count."));
         }
     }
 
@@ -77,7 +78,7 @@ public class IsuancesRestController {
         try {
             List<IssuancesOutDto> issuances = issuancesService.getIssuanceByUserCredential(userCredential);
             if (issuances.isEmpty()) {
-                return ResponseEntity.status(404).body(new ApiResponse(404,"No issuances found."));
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(HttpStatus.NOT_FOUND,"No issuances found."));
             }
             return ResponseEntity.ok(issuances);
         } catch (Exception e) {
@@ -90,11 +91,11 @@ public class IsuancesRestController {
         try {
             List<IssuancesOutDto> issuances = issuancesService.findByBookId(bookId);
             if (issuances.isEmpty()) {
-                return ResponseEntity.status(404).body(new ApiResponse(404, "No issuances found."));
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(HttpStatus.NOT_FOUND, "No issuances found."));
             }
             return ResponseEntity.ok(issuances);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("Error retrieving issuances for book.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse(HttpStatus.BAD_REQUEST,"Error retrieving issuances for book."));
         }
     }
 
@@ -103,11 +104,11 @@ public class IsuancesRestController {
         try {
             List<IssuancesOutDto> issuances = issuancesService.findByUserId(userId);
             if (issuances.isEmpty()) {
-                return ResponseEntity.status(404).body(new ApiResponse(404,"No issuances found."));
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(HttpStatus.NOT_FOUND,"No issuances found."));
             }
             return ResponseEntity.ok(issuances);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("Error retrieving issuances for user.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse(HttpStatus.BAD_REQUEST,"Error retrieving issuances for user."));
         }
     }
 
@@ -115,9 +116,9 @@ public class IsuancesRestController {
     public ResponseEntity<?> addIssuance(@RequestBody IssuancesInDto issuancesInDto) {
         try {
             IssuancesOutDto issuancesOutDto = issuancesService.saveIssuances(issuancesInDto);
-            return ResponseEntity.status(201).body(new ApiResponse(201, "Issuance created successfully."));
+            return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(HttpStatus.CREATED, "Issuance created successfully."));
         } catch (Exception e) {
-            return ResponseEntity.status(400).body(new ApiResponse(400,"Error creating issuance"));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse(HttpStatus.BAD_REQUEST,"Error creating issuance"));
         }
     }
 
@@ -125,9 +126,9 @@ public class IsuancesRestController {
     public ResponseEntity<?> updateIssuance(@PathVariable int issuanceId, @RequestBody IssuancesInDto issuancesInDto) {
         try {
             IssuancesOutDto updatedIssuance = issuancesService.updateIssuance(issuanceId, issuancesInDto);
-            return ResponseEntity.status(200).body(new ApiResponse(200, "Issuance updated successfully."));
+            return ResponseEntity.ok().body(new ApiResponse(HttpStatus.OK, "Issuance updated successfully."));
         } catch (Exception e) {
-            return ResponseEntity.status(400).body(new ApiResponse(400,"Error updating issuance."));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse(HttpStatus.BAD_REQUEST,"Error updating issuance."));
         }
 
     }
@@ -138,7 +139,7 @@ public class IsuancesRestController {
             List<IssuancesOutDto> issuancesOutDto = issuancesService.searchCredential(keywords);
             return ResponseEntity.ok(issuancesOutDto);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("Error searching issuances.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse(HttpStatus.BAD_REQUEST,"Error searching issuances."));
         }
     }
 

@@ -2,6 +2,7 @@ package com.libraryManagement.backend.service;
 
 import com.libraryManagement.backend.dto.BooksInDto;
 import com.libraryManagement.backend.dto.BooksOutDto;
+import com.libraryManagement.backend.entity.Books;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -19,11 +20,9 @@ public interface iBookService {
 
     BooksOutDto findByBookAuthor(String bookAuthor);
 
-    BooksOutDto saveBooks(BooksInDto booksInDto);
+    Books save(BooksInDto booksInDto);
 
     BooksOutDto updateBooks(int bookId, BooksInDto booksInDto);
-
-    BooksOutDto updateBooksByTitle(String bookTitle, BooksInDto booksInDto);
 
     void deleteById(int bookId);
 

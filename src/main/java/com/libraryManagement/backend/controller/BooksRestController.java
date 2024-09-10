@@ -3,12 +3,14 @@ package com.libraryManagement.backend.controller;
 import com.libraryManagement.backend.dto.BooksInDto;
 import com.libraryManagement.backend.dto.BooksOutDto;
 import com.libraryManagement.backend.dto.response.ApiResponse;
+import com.libraryManagement.backend.entity.Books;
 import com.libraryManagement.backend.service.iBookService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,7 +46,7 @@ public class BooksRestController {
         List<BooksOutDto> booksOutDtoList = bookService.findByCategoryName(categoryName);
 
         if (booksOutDtoList.isEmpty()) {
-            return ResponseEntity.status(404).body(new ApiResponse(404, "Category not found."));
+            return ResponseEntity.status(404).body(new ApiResponse(HttpStatus.NOT_FOUND, "Category not found."));
         } else {
             return ResponseEntity.ok(booksOutDtoList);
         }
@@ -73,39 +75,25 @@ public class BooksRestController {
 
     @PostMapping("")
     public ResponseEntity<?> addBook(@RequestBody BooksInDto booksInDto) {
-        BooksOutDto booksOutDto = bookService.saveBooks(booksInDto);
-        return ResponseEntity.status(201).body(new ApiResponse(201, "Book added successfully!"));
+        Books books = bookService.save(booksInDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(HttpStatus.CREATED, "Book added successfully!"));
     }
 
     @PutMapping("/id/{bookId}")
     public ResponseEntity<?> updateBook(@PathVariable int bookId, @RequestBody BooksInDto booksInDto) {
-        try {
             BooksOutDto updatedBook = bookService.updateBooks(bookId, booksInDto);
-            return ResponseEntity.ok(new ApiResponse(200, "Book updated successfully."));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(404).body(e.getMessage());
-        }
-    }
-
-    @PutMapping("/title/{bookTitle}")
-    public ResponseEntity<?> updateBook(@PathVariable String bookTitle, @RequestBody BooksInDto booksInDto) {
-        try {
-            BooksOutDto updatedBook = bookService.updateBooksByTitle(bookTitle, booksInDto);
-            return ResponseEntity.ok(new ApiResponse(200, "Book updated successfully."));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(404).body(e.getMessage());
-        }
+            return ResponseEntity.ok(new ApiResponse(HttpStatus.OK, "Book updated successfully."));
     }
 
     @DeleteMapping("/id/{bookId}")
     public ResponseEntity<?> removeBook(@PathVariable int bookId) {
         try {
             if (bookService.isBookIssued(bookId)) {
-                return ResponseEntity.status(400).body(new ApiResponse(400, "Book cannot be deleted as it is currently issued."));
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiResponse(HttpStatus.CONFLICT, "Book cannot be deleted as it is currently issued."));
             }
             BooksOutDto booksOutDto = bookService.findById(bookId);
             bookService.deleteById(bookId);
-            return ResponseEntity.ok(new ApiResponse(200,"Book deleted successfully."));
+            return ResponseEntity.ok(new ApiResponse(HttpStatus.OK,"Book deleted successfully."));
         } catch (RuntimeException e) {
             return ResponseEntity.status(404).body(e.getMessage());
         }
@@ -117,10 +105,10 @@ public class BooksRestController {
         try {
         BooksOutDto booksOutDto = bookService.findByBookTitle(bookTitle);
             if (bookService.isBookIssued(booksOutDto.getBookId())) {
-                return ResponseEntity.status(400).body(new ApiResponse(400, "Book cannot be deleted as it is currently issued."));
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiResponse(HttpStatus.CONFLICT, "Book cannot be deleted as it is currently issued."));
             }
         bookService.deleteByBookTitle(bookTitle);
-            return ResponseEntity.ok(new ApiResponse(200,"Book deleted successfully."));
+            return ResponseEntity.ok(new ApiResponse(HttpStatus.OK,"Book deleted successfully."));
         } catch (RuntimeException e) {
             return ResponseEntity.status(404).body(e.getMessage());
         }

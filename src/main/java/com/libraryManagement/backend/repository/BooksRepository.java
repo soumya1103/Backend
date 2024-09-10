@@ -27,4 +27,6 @@ public interface BooksRepository extends JpaRepository<Books, Integer> {
 
     @Query("SELECT b from Books b WHERE b.bookTitle LIKE :keyword OR b.bookAuthor LIKE :keyword")
     List<Books> findByBookTitleOrBookAuthorContaining(@Param("keyword") String keywords);
+
+    Books findByBookTitleIgnoreCase(String bookTitle);
 }

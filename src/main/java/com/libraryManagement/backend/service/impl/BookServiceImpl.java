@@ -4,6 +4,8 @@ import com.libraryManagement.backend.dto.BooksInDto;
 import com.libraryManagement.backend.dto.BooksOutDto;
 import com.libraryManagement.backend.entity.Books;
 import com.libraryManagement.backend.entity.Categories;
+import com.libraryManagement.backend.exception.ResourceAlreadyExistsException;
+import com.libraryManagement.backend.exception.ResourceNotFoundException;
 import com.libraryManagement.backend.mapper.BooksMapper;
 import com.libraryManagement.backend.repository.BooksRepository;
 import com.libraryManagement.backend.repository.CategoriesRepository;
@@ -80,14 +82,19 @@ public class BookServiceImpl implements iBookService {
 
     @Override
     @Transactional
-    public BooksOutDto saveBooks(BooksInDto booksInDto) {
+    public Books save(BooksInDto booksInDto) {
+        Books existingBook = booksRepository.findByBookTitleIgnoreCase(booksInDto.getBookTitle());
+
+        if (existingBook != null) {
+            throw new ResourceAlreadyExistsException("Duplicate entry.");
+        }
+
         Categories category = categoriesRepository.findById(booksInDto.getCategoryId())
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found."));
 
-        Books books = BooksMapper.mapToBooksEntity(booksInDto, category);
-        books = booksRepository.save(books);
+        Books book = BooksMapper.mapToBooksEntity(booksInDto, category);
 
-        return BooksMapper.mapToBooksDto(books);
+        return booksRepository.save(book);
     }
 
     @Override
@@ -95,18 +102,24 @@ public class BookServiceImpl implements iBookService {
     public BooksOutDto updateBooks(int bookId, BooksInDto booksInDto) {
         Optional<Books> books = booksRepository.findById(bookId);
         if (books.isEmpty()) {
-            throw new RuntimeException("Book not found with id: " + bookId);
+            throw new ResourceNotFoundException("Book not found.");
         }
 
         Books existingBook = books.get();
 
         if (booksInDto.getCategoryId() != null) {
             Categories category = categoriesRepository.findById(booksInDto.getCategoryId())
-                    .orElseThrow(() -> new RuntimeException("Category not found with id: " + booksInDto.getCategoryId()));
+                    .orElseThrow(() -> new ResourceNotFoundException("Category not found."));
             existingBook.setCategoryId(category);
         }
 
         if (booksInDto.getBookTitle() != null) {
+            Books existingBookTitle = booksRepository.findByBookTitleIgnoreCase(booksInDto.getBookTitle());
+
+            if (existingBookTitle != null) {
+                throw new ResourceAlreadyExistsException("Duplicate entry.");
+            }
+
             existingBook.setBookTitle(booksInDto.getBookTitle());
         }
 
@@ -127,41 +140,6 @@ public class BookServiceImpl implements iBookService {
         return BooksMapper.mapToBooksDto(updatedBook);
     }
 
-    @Override
-    public BooksOutDto updateBooksByTitle(String bookTitle, BooksInDto booksInDto) {
-        Optional<Books> books = booksRepository.findByBookTitle(bookTitle);
-        if (books.isEmpty()) {
-            throw new RuntimeException("Book not found with title: " + bookTitle);
-        }
-
-        Books existingBook = books.get();
-
-        if (booksInDto.getCategoryId() != null) {
-            Categories category = categoriesRepository.findById(booksInDto.getCategoryId())
-                    .orElseThrow(() -> new RuntimeException("Category not found with id: " + booksInDto.getCategoryId()));
-            existingBook.setCategoryId(category);
-        }
-
-        if (booksInDto.getBookTitle() != null) {
-            existingBook.setBookTitle(booksInDto.getBookTitle());
-        }
-
-        if (booksInDto.getBookAuthor() != null) {
-            existingBook.setBookAuthor(booksInDto.getBookAuthor());
-        }
-
-        if (booksInDto.getBookRating() != null) {
-            existingBook.setBookRating(booksInDto.getBookRating());
-        }
-
-        if (booksInDto.getBookCount() != null) {
-            existingBook.setBookCount(booksInDto.getBookCount());
-        }
-
-        Books updatedBook = booksRepository.save(existingBook);
-
-        return BooksMapper.mapToBooksDto(updatedBook);
-    }
 
     @Override
     public void deleteById(int bookId) {

@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -17,7 +18,7 @@ public interface IssuancesRepository extends JpaRepository<Issuances, Integer> {
 
     List<Issuances> findByIssuanceType(String issuanceType);
 
-    @Query("SELECT COUNT(u) FROM Issuances u WHERE u.issuanceType = 'Inhouse'")
+    @Query("SELECT COUNT(DISTINCT i.users.userId) FROM Issuances i WHERE i.issuanceType = 'Inhouse'")
     long count();
 
     List<Issuances> findByStatus(String status);
@@ -35,4 +36,6 @@ public interface IssuancesRepository extends JpaRepository<Issuances, Integer> {
     List<Issuances> findByUserCredentialOrBookTitleContaining(@Param("keyword") String keyword);
 
     boolean existsByBooksBookIdAndStatus(int bookId, String status);
+
+    List<Issuances> findAllByReturnDateBetweenAndStatus(LocalDateTime start, LocalDateTime end, String status);
 }

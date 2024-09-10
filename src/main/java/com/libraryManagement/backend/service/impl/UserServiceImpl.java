@@ -4,6 +4,8 @@ import com.libraryManagement.backend.constants.JwtConstants;
 import com.libraryManagement.backend.dto.UsersInDto;
 import com.libraryManagement.backend.dto.UsersOutDto;
 import com.libraryManagement.backend.entity.Users;
+import com.libraryManagement.backend.exception.ResourceAlreadyExistsException;
+import com.libraryManagement.backend.exception.ResourceNotFoundException;
 import com.libraryManagement.backend.mapper.UsersMapper;
 import com.libraryManagement.backend.repository.UsersRepository;
 import io.jsonwebtoken.Claims;
@@ -66,6 +68,10 @@ public class UserServiceImpl implements iUserService {
 
         String randomPassword = generateRandomPassword();
 
+        Users existingUser = usersRepository.findByUserCredential(usersInDto.getUserCredential());
+        if (existingUser != null) {
+            throw new ResourceAlreadyExistsException("Duplicate entry.");
+        }
 
         // Encrypt the generated password
         String encryptedPassword = generatePassword(randomPassword);
@@ -99,7 +105,7 @@ public class UserServiceImpl implements iUserService {
         Optional<Users> optionalUsers = usersRepository.findById(usersInDto.getUserId());
 
         if(!optionalUsers.isPresent()) {
-            throw new RuntimeException("User not found");
+            throw new ResourceNotFoundException("User not found.");
         }
 
         Users userToUpdate = optionalUsers.get();
@@ -113,6 +119,10 @@ public class UserServiceImpl implements iUserService {
         }
 
         if (usersInDto.getUserCredential() != null && !usersInDto.getUserCredential().isEmpty()) {
+            Users existingUser = usersRepository.findByUserCredential(usersInDto.getUserCredential());
+            if (existingUser != null) {
+                throw new ResourceAlreadyExistsException("Duplicate entry.");
+            }
             userToUpdate.setUserCredential(usersInDto.getUserCredential());
         }
 

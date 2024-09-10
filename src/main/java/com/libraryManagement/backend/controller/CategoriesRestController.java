@@ -50,7 +50,7 @@ public class CategoriesRestController {
         if (categoriesOutDto.isPresent()) {
             return ResponseEntity.ok(categoriesOutDto.get());
         } else {
-            return ResponseEntity.status(404).body(new ApiResponse(404, "Category not found."));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(HttpStatus.NOT_FOUND, "Category not found."));
         }
     }
 
@@ -65,58 +65,31 @@ public class CategoriesRestController {
         if (category != null) {
             return ResponseEntity.status(HttpStatus.OK).body(category);
         } else {
-            return ResponseEntity.status(404).body(new ApiResponse(404, "Category not found."));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(HttpStatus.NOT_FOUND, "Category not found."));
         }
     }
 
     @PostMapping("")
     public ResponseEntity<?> addCategory(@RequestBody Categories categories) {
         Categories dbCategory = categoriesService.save(categories);
-        return ResponseEntity.status(201).body(new ApiResponse(201, "Category saved successfully."));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(HttpStatus.CREATED, "Category saved successfully."));
     }
 
     @PutMapping("/id/{categoryId}")
     public ResponseEntity<?> updateCategory(@PathVariable int categoryId, @RequestBody CategoriesInDto categoriesInDto) {
-        try {
             categoriesInDto.setCategoryId(categoryId);
             CategoriesOutDto updatedCategory = categoriesService.updateCategory(categoriesInDto);
-            return ResponseEntity.ok(new ApiResponse(200,"Category updated successfully."));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(404).body(e.getMessage());
-        }
-    }
-
-    @PutMapping("/name/{categoryName}")
-    public ResponseEntity<?> updateCategoryByName(
-            @PathVariable String categoryName,
-            @RequestBody CategoriesInDto categoriesInDto) {
-        try {
-            CategoriesOutDto updatedCategory = categoriesService.updateCategoryByName(categoryName, categoriesInDto);
-            return ResponseEntity.ok(new ApiResponse(200,"Category updated successfully."));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(404).body(e.getMessage());
-        }
+            return ResponseEntity.ok(new ApiResponse(HttpStatus.OK,"Category updated successfully."));
     }
 
     @DeleteMapping("/id/{categoryId}")
     public ResponseEntity<?> removeCategory(@PathVariable int categoryId) {
         try {
             categoriesService.deleteById(categoryId);
-            return ResponseEntity.ok(new ApiResponse(200,"Category deleted successfully."));
+            return ResponseEntity.ok(new ApiResponse(HttpStatus.OK,"Category deleted successfully."));
         } catch (RuntimeException e) {
-            return ResponseEntity.status(404).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiResponse(HttpStatus.CONFLICT, e.getMessage()));
         }
-    }
-
-    @DeleteMapping("/name/{categoryName}")
-    public ResponseEntity<?> deleteByCategoryName(@PathVariable String categoryName) {
-        Categories categories = categoriesService.findByCategoryNameIgnoreCase(categoryName);
-        if (categories == null) {
-            return ResponseEntity.status(404).body(new ApiResponse(404,"Category not found"));
-        }
-        categoriesService.deleteById(categories.getCategoryId());
-
-        return ResponseEntity.ok(new ApiResponse(200, "Category deleted successfully"));
     }
 
     @GetMapping("/search/{keywords}")

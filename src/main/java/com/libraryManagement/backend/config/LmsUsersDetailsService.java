@@ -23,7 +23,7 @@ public class LmsUsersDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Users users = usersRepository.findByUserCredential(username);
         if (users == null) {
-            throw new RuntimeException("User details not found for the user: " + username);
+            throw new UsernameNotFoundException("User details not found.");
         }
 
         List<GrantedAuthority> grantedAuthorities = List.of(new SimpleGrantedAuthority(users.getRole()));

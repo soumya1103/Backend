@@ -20,8 +20,6 @@ public interface iCategoriesService {
 
     CategoriesOutDto updateCategory(CategoriesInDto categoriesInDto);
 
-    CategoriesOutDto updateCategoryByName(String categoryName, CategoriesInDto categoryInDto);
-
     void deleteById(int categoryId);
 
     long getCategoryCount();
@@ -30,5 +28,4 @@ public interface iCategoriesService {
 
     List<CategoriesOutDto> searchCategories(String keyword);
 
-    void deleteByCategoryName(String categoryName);
 }

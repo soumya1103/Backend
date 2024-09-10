@@ -5,6 +5,7 @@ import com.libraryManagement.backend.dto.IssuancesOutDto;
 import com.libraryManagement.backend.entity.Books;
 import com.libraryManagement.backend.entity.Issuances;
 import com.libraryManagement.backend.entity.Users;
+import com.libraryManagement.backend.exception.ResourceNotFoundException;
 import com.libraryManagement.backend.mapper.IssuancesMapper;
 import com.libraryManagement.backend.repository.BooksRepository;
 import com.libraryManagement.backend.repository.IssuancesRepository;
@@ -51,7 +52,7 @@ public class IssuancesServiceImpl implements iIssuancesService {
     @Override
     public IssuancesOutDto findById(int issuanceId) {
         Issuances issuances = issuancesRepository.findById(issuanceId).
-                orElseThrow(() -> new RuntimeException("Issuance not found with id: " + issuanceId));
+                orElseThrow(() -> new ResourceNotFoundException("Issuance not found."));
 
         IssuancesOutDto issuancesOutDto = IssuancesMapper.mapToIssuancesDto(issuances);
         return issuancesOutDto;
@@ -61,10 +62,10 @@ public class IssuancesServiceImpl implements iIssuancesService {
     @Transactional
     public IssuancesOutDto saveIssuances(IssuancesInDto issuancesInDto) {
         Books books = booksRepository.findById(issuancesInDto.getBookId())
-                .orElseThrow(() -> new RuntimeException("Book not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Book not found."));
 
         Users users = usersRepository.findById(issuancesInDto.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found."));
 
         Issuances issuances = IssuancesMapper.mapToIssuancesEntity(issuancesInDto, books, users);
         issuances.setIssueDate(LocalDateTime.now());
@@ -76,8 +77,7 @@ public class IssuancesServiceImpl implements iIssuancesService {
                 issuances.getBooks().getBookTitle(),
                 issuances.getBooks().getBookAuthor());
 
-        System.out.println(issuances.getIssuanceType());
-//        if (issuances.getIssuanceType() == "Remote") {
+//        if (issuances.getIssuanceType().equalsIgnoreCase("Remote")) {
 //        twilioService.sendSms(issuances.getUsers().getUserCredential(), message);
 //        }
 
