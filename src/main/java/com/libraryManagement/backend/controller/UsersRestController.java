@@ -4,6 +4,7 @@ import com.libraryManagement.backend.dto.IssuancesOutDto;
 import com.libraryManagement.backend.dto.UsersInDto;
 import com.libraryManagement.backend.dto.UsersOutDto;
 import com.libraryManagement.backend.dto.response.ApiResponse;
+import com.libraryManagement.backend.exception.ResourceNotAllowedToDeleteException;
 import com.libraryManagement.backend.exception.ResourceNotFoundException;
 import com.libraryManagement.backend.service.iIssuancesService;
 import com.libraryManagement.backend.service.iUserService;
@@ -97,14 +98,14 @@ public class UsersRestController {
     public ResponseEntity<?> removeUser(@PathVariable int userId) {
         Optional<UsersOutDto> users = usersService.findById(userId);
         if (users.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(HttpStatus.NOT_FOUND,"User not found"));
+            throw new ResourceNotFoundException("User not found");
         }
         List<IssuancesOutDto> userIssuances = issuancesService.findByUserId(userId);
         boolean hasIssuedBooks = userIssuances.stream()
                 .anyMatch(issuance -> "Issued".equalsIgnoreCase(issuance.getStatus()));
 
         if (hasIssuedBooks) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiResponse(HttpStatus.CONFLICT, "User cannot be deleted because they have issued books."));
+            throw new ResourceNotAllowedToDeleteException("User cannot be deleted because they have issued books.");
         }
 
         usersService.deleteById(userId);

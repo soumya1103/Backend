@@ -120,7 +120,7 @@ public class UserServiceImpl implements iUserService {
 
         if (usersInDto.getUserCredential() != null && !usersInDto.getUserCredential().isEmpty()) {
             Users existingUser = usersRepository.findByUserCredential(usersInDto.getUserCredential());
-            if (existingUser != null) {
+            if ((existingUser != null) && (existingUser.getUserId() != usersInDto.getUserId())) {
                 throw new ResourceAlreadyExistsException("Duplicate entry.");
             }
             userToUpdate.setUserCredential(usersInDto.getUserCredential());

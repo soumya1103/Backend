@@ -5,6 +5,7 @@ import com.libraryManagement.backend.dto.CategoriesOutDto;
 import com.libraryManagement.backend.entity.Books;
 import com.libraryManagement.backend.entity.Categories;
 import com.libraryManagement.backend.exception.ResourceAlreadyExistsException;
+import com.libraryManagement.backend.exception.ResourceNotAllowedToDeleteException;
 import com.libraryManagement.backend.mapper.CategoriesMapper;
 import com.libraryManagement.backend.repository.BooksRepository;
 import com.libraryManagement.backend.repository.CategoriesRepository;
@@ -107,7 +108,7 @@ public class CategoriesServiceImpl implements iCategoriesService {
 
         for (Books book : booksInCategory) {
             if (issuancesRepository.existsByBooksBookIdAndStatus(book.getBookId(), "Issued")) {
-                throw new RuntimeException("Cannot delete category because a book from this category is currently issued.");
+                throw new ResourceNotAllowedToDeleteException("Cannot delete category because a book from this category is currently issued.");
             }
         }
 

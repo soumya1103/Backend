@@ -107,16 +107,11 @@ public class BookServiceImpl implements iBookService {
 
         Books existingBook = books.get();
 
-        if (booksInDto.getCategoryId() != null) {
-            Categories category = categoriesRepository.findById(booksInDto.getCategoryId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Category not found."));
-            existingBook.setCategoryId(category);
-        }
-
         if (booksInDto.getBookTitle() != null) {
             Books existingBookTitle = booksRepository.findByBookTitleIgnoreCase(booksInDto.getBookTitle());
 
-            if (existingBookTitle != null) {
+            if ((existingBookTitle != null) && (existingBookTitle.getBookId() != booksInDto.getBookId()) &&
+                    (existingBookTitle.getBookId() != bookId)) {
                 throw new ResourceAlreadyExistsException("Duplicate entry.");
             }
 
@@ -147,7 +142,6 @@ public class BookServiceImpl implements iBookService {
     }
 
     @Override
-    @Transactional
     public void deleteByBookTitle(String bookTitle) {
         booksRepository.deleteByBookTitle(bookTitle);
 

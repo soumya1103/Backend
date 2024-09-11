@@ -84,12 +84,8 @@ public class CategoriesRestController {
 
     @DeleteMapping("/id/{categoryId}")
     public ResponseEntity<?> removeCategory(@PathVariable int categoryId) {
-        try {
             categoriesService.deleteById(categoryId);
             return ResponseEntity.ok(new ApiResponse(HttpStatus.OK,"Category deleted successfully."));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiResponse(HttpStatus.CONFLICT, e.getMessage()));
-        }
     }
 
     @GetMapping("/search/{keywords}")

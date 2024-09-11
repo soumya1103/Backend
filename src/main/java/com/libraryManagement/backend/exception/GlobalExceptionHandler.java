@@ -13,6 +13,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.server.MethodNotAllowedException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.util.HashMap;
@@ -80,4 +81,16 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
         return new ResponseEntity<>(apiResponse, HttpStatus.NOT_FOUND);
     }
+
+    @ExceptionHandler(ResourceNotAllowedToDeleteException.class)
+    public ResponseEntity<ApiResponse> handleResourceNotAllowedToDeleteException(MethodNotAllowedException exception,
+                                                                       WebRequest webRequest) {
+        ApiResponse apiResponse = new ApiResponse(
+                HttpStatus.METHOD_NOT_ALLOWED.toString(),
+                exception.getMessage()
+        );
+
+        return new ResponseEntity<>(apiResponse, HttpStatus.METHOD_NOT_ALLOWED);
+    }
+
 }

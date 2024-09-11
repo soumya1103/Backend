@@ -4,6 +4,7 @@ import com.libraryManagement.backend.dto.BooksInDto;
 import com.libraryManagement.backend.dto.BooksOutDto;
 import com.libraryManagement.backend.dto.response.ApiResponse;
 import com.libraryManagement.backend.entity.Books;
+import com.libraryManagement.backend.exception.ResourceNotAllowedToDeleteException;
 import com.libraryManagement.backend.service.iBookService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -87,16 +88,12 @@ public class BooksRestController {
 
     @DeleteMapping("/id/{bookId}")
     public ResponseEntity<?> removeBook(@PathVariable int bookId) {
-        try {
             if (bookService.isBookIssued(bookId)) {
-                return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiResponse(HttpStatus.CONFLICT, "Book cannot be deleted as it is currently issued."));
+                throw new ResourceNotAllowedToDeleteException("Book cannot be deleted as it is currently issued.");
             }
             BooksOutDto booksOutDto = bookService.findById(bookId);
             bookService.deleteById(bookId);
             return ResponseEntity.ok(new ApiResponse(HttpStatus.OK,"Book deleted successfully."));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(404).body(e.getMessage());
-        }
 
     }
 
@@ -105,7 +102,7 @@ public class BooksRestController {
         try {
         BooksOutDto booksOutDto = bookService.findByBookTitle(bookTitle);
             if (bookService.isBookIssued(booksOutDto.getBookId())) {
-                return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiResponse(HttpStatus.CONFLICT, "Book cannot be deleted as it is currently issued."));
+                throw new ResourceNotAllowedToDeleteException("Book cannot be deleted as it is currently issued.");
             }
         bookService.deleteByBookTitle(bookTitle);
             return ResponseEntity.ok(new ApiResponse(HttpStatus.OK,"Book deleted successfully."));
