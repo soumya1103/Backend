@@ -1,6 +1,7 @@
 package com.libraryManagement.backend.exception;
 
 import com.libraryManagement.backend.dto.response.ApiResponse;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -36,6 +37,17 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         });
 
         return new ResponseEntity<>(validationErrors, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiResponse> handleGlobalException(Exception exception,
+                                                             WebRequest webRequest) {
+        ApiResponse apiResponse = new ApiResponse(
+                HttpStatus.INTERNAL_SERVER_ERROR.toString(),
+                exception.getMessage()
+        );
+
+        return new ResponseEntity<>(apiResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(ResourceAlreadyExistsException.class)
@@ -91,6 +103,17 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         );
 
         return new ResponseEntity<>(apiResponse, HttpStatus.METHOD_NOT_ALLOWED);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse> handleDataIntegrityViolationException(DataIntegrityViolationException exception,
+                                                                             WebRequest webRequest) {
+        ApiResponse apiResponse = new ApiResponse(
+                HttpStatus.BAD_REQUEST.toString(),
+                "Operation failed."
+        );
+
+        return new ResponseEntity<>(apiResponse, HttpStatus.BAD_REQUEST);
     }
 
 }

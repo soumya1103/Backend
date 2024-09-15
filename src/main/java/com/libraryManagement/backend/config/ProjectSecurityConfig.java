@@ -49,6 +49,7 @@ public class ProjectSecurityConfig {
 //                Other routes
                         .requestMatchers("/lms/login", "/error").permitAll()
                         .requestMatchers("/lms/users").hasRole("ADMIN")
+                        .requestMatchers("/lms/dashboard/count/all").hasRole("ADMIN")
                         .requestMatchers("/lms/current-user").authenticated()
 
 //                Category routes
