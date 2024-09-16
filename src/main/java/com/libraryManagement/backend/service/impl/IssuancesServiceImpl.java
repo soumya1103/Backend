@@ -140,16 +140,6 @@ public class IssuancesServiceImpl implements iIssuancesService {
     }
 
     @Override
-    public List<IssuancesOutDto> getIssuanceByStatus(String status) {
-        List<Issuances> issuances = issuancesRepository.findByStatus(status);
-        List<IssuancesOutDto> issuancesOutDto = new ArrayList<>();
-
-        issuances.forEach(issuance -> issuancesOutDto.add(IssuancesMapper.mapToIssuancesDto(issuance)));
-
-        return issuancesOutDto;
-    }
-
-    @Override
     public long getIssuanceCountByType() {
         return issuancesRepository.count();
     }
@@ -185,8 +175,9 @@ public class IssuancesServiceImpl implements iIssuancesService {
     }
 
     @Override
-    public List<IssuancesOutDto> searchCredential(String keywords) {
+    public List<IssuancesOutDto> searchByCredential(String keywords) {
         List<Issuances> issuances = issuancesRepository.findByUserCredentialOrBookTitleContaining("%" + keywords + "%");
         return issuances.stream().map(IssuancesMapper::mapToIssuancesDto).toList();
     }
+
 }

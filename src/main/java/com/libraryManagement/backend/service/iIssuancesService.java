@@ -21,8 +21,6 @@ public interface iIssuancesService {
 
     List<IssuancesOutDto> getIssuanceByIssuanceType(String issuanceType);
 
-    List<IssuancesOutDto> getIssuanceByStatus(String status);
-
     long getIssuanceCountByType();
 
     List<IssuancesOutDto> getIssuanceByUserCredential(String userCredential);
@@ -31,5 +29,5 @@ public interface iIssuancesService {
 
     List<IssuancesOutDto> findByUserId(int userId);
 
-    List<IssuancesOutDto> searchCredential(String keywords);
+    List<IssuancesOutDto> searchByCredential(String keywords);
 }

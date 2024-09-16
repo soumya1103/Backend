@@ -4,6 +4,7 @@ import com.libraryManagement.backend.dto.CategoriesInDto;
 import com.libraryManagement.backend.dto.CategoriesOutDto;
 import com.libraryManagement.backend.dto.response.ApiResponse;
 import com.libraryManagement.backend.entity.Categories;
+import com.libraryManagement.backend.exception.ResourceNotFoundException;
 import com.libraryManagement.backend.service.iCategoriesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -50,7 +51,7 @@ public class CategoriesRestController {
         if (categoriesOutDto.isPresent()) {
             return ResponseEntity.ok(categoriesOutDto.get());
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(HttpStatus.NOT_FOUND, "Category not found."));
+            throw new ResourceNotFoundException("Category not found.");
         }
     }
 
@@ -65,7 +66,7 @@ public class CategoriesRestController {
         if (category != null) {
             return ResponseEntity.status(HttpStatus.OK).body(category);
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(HttpStatus.NOT_FOUND, "Category not found."));
+            throw new ResourceNotFoundException("Category not found.");
         }
     }
 

@@ -21,8 +21,6 @@ public interface IssuancesRepository extends JpaRepository<Issuances, Integer> {
     @Query("SELECT COUNT(DISTINCT i.users.userId) FROM Issuances i WHERE i.issuanceType = 'Inhouse'")
     long count();
 
-    List<Issuances> findByStatus(String status);
-
     @Query("SELECT i FROM Issuances i WHERE i.users.userCredential = :userCredential")
     List<Issuances> findByUserCredential(@Param("userCredential") String userCredential);
 

@@ -64,14 +64,9 @@ public class ProjectSecurityConfig {
 //                Issuance routes
                         .requestMatchers("/lms/issuance/user/{userCredential}").authenticated()
                         .requestMatchers("/lms/issuances/**").hasRole("ADMIN")
-
-
-//                        .requestMatchers("/**").permitAll()
-
         );
 
         http
-//                .addFilterAfter(new JWTTokenGeneratorFilter(), BasicAuthenticationFilter.class)
                 .addFilterBefore(new JwtTokenValidatorFilter(), BasicAuthenticationFilter.class);
 
         http.formLogin(formLoginConfig -> formLoginConfig.disable());
@@ -87,11 +82,6 @@ public class ProjectSecurityConfig {
         // by default it is using bcrypt password encoder
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
-
-//    @Bean
-//    CompromisedPasswordChecker compromisedPasswordChecker() {
-//        return new HaveIBeenPwnedRestApiPasswordChecker();
-//    }
 
     @Bean
     AuthenticationManager authenticationManager(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {

@@ -99,16 +99,12 @@ public class BooksRestController {
 
     @DeleteMapping("/title/{bookTitle}")
     public ResponseEntity<?> deleteByBookTitle(@PathVariable String bookTitle) {
-        try {
         BooksOutDto booksOutDto = bookService.findByBookTitle(bookTitle);
             if (bookService.isBookIssued(booksOutDto.getBookId())) {
                 throw new ResourceNotAllowedToDeleteException("Book cannot be deleted as it is currently issued.");
             }
         bookService.deleteByBookTitle(bookTitle);
             return ResponseEntity.ok(new ApiResponse(HttpStatus.OK,"Book deleted successfully."));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(404).body(e.getMessage());
-        }
     }
 
     @GetMapping("/search/{keywords}")
