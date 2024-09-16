@@ -33,7 +33,7 @@ public class BookReturnServiceImpl implements iBookReturnService {
                             "by Book Return Date: (%s).",
                     issuance.getBooks().getBookTitle(), issuance.getBooks().getBookAuthor(),
                     issuance.getReturnDate().toLocalDate());
-//            twilioService.sendSms(issuance.getUsers().getUserCredential(), message);
+            twilioService.sendSms(issuance.getUsers().getUserCredential(), message);
         }
 
 //        System.out.println("DUO TOMORROW" + dueTomorrow);

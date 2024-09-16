@@ -85,7 +85,7 @@ public class UserServiceImpl implements iUserService {
                 savedUser.getUserCredential(),
                 randomPassword);
 
-//        twilioService.sendSms(savedUser.getUserCredential(), message);
+        twilioService.sendSms(savedUser.getUserCredential(), message);
 
         UsersOutDto usersOutDto = UsersMapper.mapToUsersOutDto(savedUser);
         return usersOutDto;

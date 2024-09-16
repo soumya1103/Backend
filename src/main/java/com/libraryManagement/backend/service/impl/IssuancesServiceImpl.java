@@ -73,13 +73,14 @@ public class IssuancesServiceImpl implements iIssuancesService {
         issuances = issuancesRepository.save(issuances);
 
 
-        String message = String.format("Issued book: '%s'" + " Author name: '%s'",
+        String message = String.format("Issued book: '%s'" + " Author name: '%s'" + "Return Date: '%s'",
                 issuances.getBooks().getBookTitle(),
-                issuances.getBooks().getBookAuthor());
+                issuances.getBooks().getBookAuthor(),
+                issuances.getReturnDate());
 
-//        if (issuances.getIssuanceType().equalsIgnoreCase("Remote")) {
-//        twilioService.sendSms(issuances.getUsers().getUserCredential(), message);
-//        }
+        if (issuances.getIssuanceType().equalsIgnoreCase("Remote")) {
+        twilioService.sendSms(issuances.getUsers().getUserCredential(), message);
+        }
 
         return IssuancesMapper.mapToIssuancesDto(issuances);
     }
