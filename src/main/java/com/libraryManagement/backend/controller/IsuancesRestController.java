@@ -3,7 +3,6 @@ package com.libraryManagement.backend.controller;
 import com.libraryManagement.backend.dto.IssuancesInDto;
 import com.libraryManagement.backend.dto.IssuancesOutDto;
 import com.libraryManagement.backend.dto.response.ApiResponse;
-import com.libraryManagement.backend.exception.ResourceNotFoundException;
 import com.libraryManagement.backend.service.iIssuancesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -37,18 +36,12 @@ public class IsuancesRestController {
     @GetMapping("/issuances/id/{issuanceId}")
     public ResponseEntity<?> getIssuances(@PathVariable int issuanceId) {
             IssuancesOutDto issuancesOutDto = issuancesService.findById(issuanceId);
-            if (issuancesOutDto == null) {
-                throw new ResourceNotFoundException("Issuance not found.");
-            }
             return ResponseEntity.ok(issuancesOutDto);
     }
 
     @GetMapping("/issuances/type")
     public ResponseEntity<?> findByIssuanceType() {
             List<IssuancesOutDto> issuances = issuancesService.getIssuanceByIssuanceType("Inhouse");
-            if (issuances.isEmpty()) {
-                throw new ResourceNotFoundException("Issuance not found.");
-            }
             return ResponseEntity.ok(issuances);
     }
 
@@ -61,27 +54,21 @@ public class IsuancesRestController {
     @GetMapping("/issuance/user/{userCredential}")
     public ResponseEntity<?> getByUserCredential(@PathVariable String userCredential) {
             List<IssuancesOutDto> issuances = issuancesService.getIssuanceByUserCredential(userCredential);
-            if (issuances.isEmpty()) {
-                throw new ResourceNotFoundException("No issuances found.");
-            }
+
             return ResponseEntity.ok(issuances);
     }
 
     @GetMapping("/issuances/book/{bookId}")
     public ResponseEntity<?> findByBookId(@PathVariable int bookId) {
             List<IssuancesOutDto> issuances = issuancesService.findByBookId(bookId);
-            if (issuances.isEmpty()) {
-                throw new ResourceNotFoundException("No issuances found.");
-            }
+
             return ResponseEntity.ok(issuances);
     }
 
     @GetMapping("/issuances/user/{userId}")
     public ResponseEntity<?> findByUserId(@PathVariable int userId) {
             List<IssuancesOutDto> issuances = issuancesService.findByUserId(userId);
-            if (issuances.isEmpty()) {
-                throw new ResourceNotFoundException("No issuances found.");
-            }
+
             return ResponseEntity.ok(issuances);
     }
 

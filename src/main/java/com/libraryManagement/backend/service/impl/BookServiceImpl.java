@@ -5,6 +5,7 @@ import com.libraryManagement.backend.dto.BooksOutDto;
 import com.libraryManagement.backend.entity.Books;
 import com.libraryManagement.backend.entity.Categories;
 import com.libraryManagement.backend.exception.ResourceAlreadyExistsException;
+import com.libraryManagement.backend.exception.ResourceNotAllowedToDeleteException;
 import com.libraryManagement.backend.exception.ResourceNotFoundException;
 import com.libraryManagement.backend.mapper.BooksMapper;
 import com.libraryManagement.backend.repository.BooksRepository;
@@ -46,7 +47,7 @@ public class BookServiceImpl implements iBookService {
     @Override
     public BooksOutDto findById(int bookId) {
         Books books = booksRepository.findById(bookId).orElseThrow(
-                () -> new RuntimeException("Book not found with id: " + bookId)
+                () -> new ResourceNotFoundException("Book not found.")
         );
 
         BooksOutDto booksOutDto = BooksMapper.mapToBooksDto(books);
@@ -56,6 +57,9 @@ public class BookServiceImpl implements iBookService {
     @Override
     public List<BooksOutDto> findByCategoryName(String categoryName) {
         List<Books> books = booksRepository.findByCategoryName(categoryName);
+        if (books.isEmpty()) {
+            throw new ResourceNotFoundException("Category not found.");
+        }
 
         return books.stream().map(BooksMapper::mapToBooksDto).toList();
     }
@@ -64,7 +68,7 @@ public class BookServiceImpl implements iBookService {
     public BooksOutDto findByBookTitle(String bookTitle) {
 
         Books books = booksRepository.findByBookTitle(bookTitle).orElseThrow(
-                () -> new RuntimeException("Book not found with title: " + bookTitle)
+                () -> new ResourceNotFoundException("Book not found.")
         );
         BooksOutDto booksOutDto = BooksMapper.mapToBooksDto(books);
         return booksOutDto;
@@ -73,7 +77,7 @@ public class BookServiceImpl implements iBookService {
     @Override
     public BooksOutDto findByBookAuthor(String bookAuthor) {
         Books books = booksRepository.findByBookAuthor(bookAuthor).orElseThrow(
-                () -> new RuntimeException("Book not found with author: " + bookAuthor)
+                () -> new RuntimeException("Book not found.")
         );
         BooksOutDto booksOutDto = BooksMapper.mapToBooksDto(books);
 
@@ -138,13 +142,10 @@ public class BookServiceImpl implements iBookService {
 
     @Override
     public void deleteById(int bookId) {
+        if (isBookIssued(bookId)) {
+            throw new ResourceNotAllowedToDeleteException("Book cannot be deleted as it is currently issued.");
+        }
         booksRepository.deleteById(bookId);
-    }
-
-    @Override
-    public void deleteByBookTitle(String bookTitle) {
-        booksRepository.deleteByBookTitle(bookTitle);
-
     }
 
     @Override
@@ -157,7 +158,7 @@ public class BookServiceImpl implements iBookService {
 
     @Override
     public List<BooksOutDto> searchByBooks(String keywords) {
-        List<Books> books = booksRepository.findByBookTitleOrBookAuthorContaining("%" + keywords + "%");
+        List<Books> books = booksRepository.findByBookTitleOrBookAuthorOrCategoryNameContaining("%" + keywords + "%");
         return books.stream().map(BooksMapper::mapToBooksDto).toList();
     }
 

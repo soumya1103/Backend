@@ -133,8 +133,10 @@ public class IssuancesServiceImpl implements iIssuancesService {
     @Override
     public List<IssuancesOutDto> getIssuanceByIssuanceType(String issuanceType) {
         List<Issuances> issuances = issuancesRepository.findByIssuanceType(issuanceType);
+        if (issuances.isEmpty()) {
+            throw new ResourceNotFoundException("Issuance not found.");
+        }
         List<IssuancesOutDto> issuancesOutDto = new ArrayList<>();
-
         issuances.forEach(issuance -> issuancesOutDto.add(IssuancesMapper.mapToIssuancesDto(issuance)));
 
         return issuancesOutDto;
@@ -148,6 +150,9 @@ public class IssuancesServiceImpl implements iIssuancesService {
     @Override
     public List<IssuancesOutDto> getIssuanceByUserCredential(String userCredential) {
         List<Issuances> issuances = issuancesRepository.findByUserCredential(userCredential);
+        if (issuances.isEmpty()) {
+            throw new ResourceNotFoundException("No issuances found.");
+        }
         List<IssuancesOutDto> issuancesOutDto = new ArrayList<>();
 
         issuances.forEach(issuance -> issuancesOutDto.add(IssuancesMapper.mapToIssuancesDto(issuance)));
@@ -158,6 +163,9 @@ public class IssuancesServiceImpl implements iIssuancesService {
     @Override
     public List<IssuancesOutDto> findByBookId(int bookId) {
         List<Issuances> issuances = issuancesRepository.findByBookId(bookId);
+        if (issuances.isEmpty()) {
+            throw new ResourceNotFoundException("No issuances found.");
+        }
         List<IssuancesOutDto> issuancesOutDto = new ArrayList<>();
 
         issuances.forEach(issuance -> issuancesOutDto.add(IssuancesMapper.mapToIssuancesDto(issuance)));
@@ -168,6 +176,9 @@ public class IssuancesServiceImpl implements iIssuancesService {
     @Override
     public List<IssuancesOutDto> findByUserId(int userId) {
         List<Issuances> issuances = issuancesRepository.findByUserId(userId);
+        if (issuances.isEmpty()) {
+            throw new ResourceNotFoundException("No issuances found.");
+        }
         List<IssuancesOutDto> issuancesOutDto = new ArrayList<>();
 
         issuances.forEach(issuance -> issuancesOutDto.add(IssuancesMapper.mapToIssuancesDto(issuance)));
@@ -177,7 +188,7 @@ public class IssuancesServiceImpl implements iIssuancesService {
 
     @Override
     public List<IssuancesOutDto> searchByCredential(String keywords) {
-        List<Issuances> issuances = issuancesRepository.findByUserCredentialOrBookTitleContaining("%" + keywords + "%");
+        List<Issuances> issuances = issuancesRepository.findByUserCredentialOrBookTitleOrUserNameOrStatusOrIssuanceTypeContaining("%" + keywords + "%");
         return issuances.stream().map(IssuancesMapper::mapToIssuancesDto).toList();
     }
 

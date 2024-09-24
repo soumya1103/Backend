@@ -4,9 +4,9 @@ import com.libraryManagement.backend.dto.CategoriesInDto;
 import com.libraryManagement.backend.dto.CategoriesOutDto;
 import com.libraryManagement.backend.dto.response.ApiResponse;
 import com.libraryManagement.backend.entity.Categories;
-import com.libraryManagement.backend.exception.ResourceNotFoundException;
 import com.libraryManagement.backend.service.iCategoriesService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -16,7 +16,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/lms/categories")
@@ -35,24 +34,21 @@ public class CategoriesRestController {
     @GetMapping("")
     public ResponseEntity<Page<CategoriesOutDto>> getCategories(
             @RequestParam(required = false) Integer page,
-            @RequestParam(required = false) Integer size
+            @RequestParam(required = false) Integer size,
+            @RequestParam(required = false) String keyword
             ){
         if (page == null || size == null) {
-            return ResponseEntity.badRequest().body(null);
+            throw new DataIntegrityViolationException("Not allowed.");
         }
             Pageable pageable = PageRequest.of(page, size).withSort(Sort.by(Sort.Direction.DESC, "categoryId"));
-        Page<CategoriesOutDto> categoriesPage = categoriesService.getCategories(pageable);
+        Page<CategoriesOutDto> categoriesPage = categoriesService.getCategories(keyword, pageable);
         return ResponseEntity.ok(categoriesPage);
     }
 
     @GetMapping("/id/{categoryId}")
     public ResponseEntity<?> getCategory(@PathVariable int categoryId) {
-        Optional<CategoriesOutDto> categoriesOutDto = Optional.ofNullable(categoriesService.findById(categoryId));
-        if (categoriesOutDto.isPresent()) {
-            return ResponseEntity.ok(categoriesOutDto.get());
-        } else {
-            throw new ResourceNotFoundException("Category not found.");
-        }
+        CategoriesOutDto categoriesOutDto = categoriesService.findById(categoryId);
+        return ResponseEntity.ok(categoriesOutDto);
     }
 
     @GetMapping("/count")
@@ -63,11 +59,7 @@ public class CategoriesRestController {
     @GetMapping("/name/{categoryName}")
     public ResponseEntity<?> getCategoryByName(@PathVariable String categoryName) {
         Categories category = categoriesService.findByCategoryNameIgnoreCase(categoryName);
-        if (category != null) {
-            return ResponseEntity.status(HttpStatus.OK).body(category);
-        } else {
-            throw new ResourceNotFoundException("Category not found.");
-        }
+        return ResponseEntity.status(HttpStatus.OK).body(category);
     }
 
     @PostMapping("")
@@ -79,7 +71,7 @@ public class CategoriesRestController {
     @PutMapping("/id/{categoryId}")
     public ResponseEntity<?> updateCategory(@PathVariable int categoryId, @RequestBody CategoriesInDto categoriesInDto) {
             categoriesInDto.setCategoryId(categoryId);
-            CategoriesOutDto updatedCategory = categoriesService.updateCategory(categoriesInDto);
+            CategoriesOutDto updatedCategory = categoriesService.updateCategory(categoryId, categoriesInDto);
             return ResponseEntity.ok(new ApiResponse(HttpStatus.OK,"Category updated successfully."));
     }
 

@@ -26,8 +26,6 @@ public interface iBookService {
 
     void deleteById(int bookId);
 
-    void deleteByBookTitle(String bookTitle);
-
     List<BooksOutDto> getAllBooks();
 
     List<BooksOutDto> searchByBooks(String keywords);

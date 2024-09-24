@@ -1,16 +1,19 @@
 package com.libraryManagement.backend.service.impl;
 
 import com.libraryManagement.backend.constants.JwtConstants;
+import com.libraryManagement.backend.dto.IssuancesOutDto;
 import com.libraryManagement.backend.dto.UsersInDto;
 import com.libraryManagement.backend.dto.UsersOutDto;
 import com.libraryManagement.backend.entity.Users;
 import com.libraryManagement.backend.exception.ResourceAlreadyExistsException;
+import com.libraryManagement.backend.exception.ResourceNotAllowedToDeleteException;
 import com.libraryManagement.backend.exception.ResourceNotFoundException;
 import com.libraryManagement.backend.mapper.UsersMapper;
 import com.libraryManagement.backend.repository.UsersRepository;
-import io.jsonwebtoken.Claims;
-import com.libraryManagement.backend.service.iUserService;
+import com.libraryManagement.backend.service.iIssuancesService;
 import com.libraryManagement.backend.service.iTwilioService;
+import com.libraryManagement.backend.service.iUserService;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +43,8 @@ public class UserServiceImpl implements iUserService {
 
     private final iTwilioService twilioService;
 
+    private iIssuancesService issuancesService;
+
     @Override
     public Page<UsersOutDto> getUsersByRole(Pageable pageable, String role) {
         Page<Users> usersPage;
@@ -50,11 +55,10 @@ public class UserServiceImpl implements iUserService {
 
     @Override
     public Optional<UsersOutDto> findById(int userId) {
-        System.out.println("User Id" + userId);
         Optional<UsersOutDto> usersOutDto = Optional.ofNullable(usersRepository.findById(userId)
                 .filter(users -> "ROLE_USER".equals(users.getRole()))
                 .map(UsersMapper::mapToUsersOutDto)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId)));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found.")));
 
         return usersOutDto;
 
@@ -111,7 +115,7 @@ public class UserServiceImpl implements iUserService {
         Users userToUpdate = optionalUsers.get();
 
         if (!"ROLE_USER".equals(userToUpdate.getRole())) {
-            throw new RuntimeException("Only users with role USER can be updated");
+            throw new ResourceAlreadyExistsException("Only users with role USER can be updated.");
         }
 
         if (usersInDto.getUserName() != null && !usersInDto.getUserName().isEmpty()) {
@@ -142,6 +146,13 @@ public class UserServiceImpl implements iUserService {
 
     @Override
     public void deleteById(int id) {
+        List<IssuancesOutDto> userIssuances = issuancesService.findByUserId(id);
+        boolean hasIssuedBooks = userIssuances.stream()
+                .anyMatch(issuance -> "Issued".equalsIgnoreCase(issuance.getStatus()));
+
+        if (hasIssuedBooks) {
+            throw new ResourceNotAllowedToDeleteException("User cannot be deleted because they have issued books.");
+        }
         usersRepository.deleteById(id);
     }
 
@@ -153,7 +164,9 @@ public class UserServiceImpl implements iUserService {
     @Override
     public UsersOutDto getUserByUserCredential(String userCredential) {
         Users users =  usersRepository.findByUserCredential(userCredential);
-
+        if (users == null) {
+            throw new ResourceNotFoundException("User not found with credentials.");
+        }
         return UsersMapper.mapToUsersOutDto(users);
     }
 
@@ -174,16 +187,21 @@ public class UserServiceImpl implements iUserService {
 
     @Override
     public List<UsersOutDto> getAllUsersByRole(String roleUser) {
-        List<UsersOutDto> usersOutDto = usersRepository.findUserByRole(roleUser)
-                .stream().map(UsersMapper::mapToUsersOutDto).toList();
+        List<Users> usersOutDto = usersRepository.findUserByRole(roleUser);
+        if (usersOutDto.isEmpty()) {
+            throw new IllegalStateException("User not found with role.");
+        }
 
-        return usersOutDto;
+        return usersOutDto.stream().map(UsersMapper::mapToUsersOutDto).toList();
     }
 
     @Override
     public List<UsersOutDto> searchByUserCredential(String keywords) {
         List<Users> users = usersRepository.findByUserCredentialOrUserNameContaining("%" + keywords + "%");
 
+        if (users.isEmpty()) {
+            throw new ResourceNotFoundException("No data found.");
+        }
 //        return users.stream().map(UsersMapper::mapToUsersOutDto).toList();1
         return users.stream()
                 .filter(user -> "ROLE_USER".equals(user.getRole())) // Filter by role

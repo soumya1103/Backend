@@ -15,9 +15,10 @@ public interface CategoriesRepository extends JpaRepository<Categories, Integer>
 
     long count();
 
+    Page<Categories> findByCategoryNameContainingIgnoreCase(String keyword, Pageable pageable);
+
     Categories findByCategoryNameIgnoreCase(String categoryName);
 
     List<Categories> findByCategoryNameContaining(String category);
 
-    void deleteByCategoryName(String categoryName);
 }

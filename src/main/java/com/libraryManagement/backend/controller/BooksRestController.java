@@ -4,7 +4,6 @@ import com.libraryManagement.backend.dto.BooksInDto;
 import com.libraryManagement.backend.dto.BooksOutDto;
 import com.libraryManagement.backend.dto.response.ApiResponse;
 import com.libraryManagement.backend.entity.Books;
-import com.libraryManagement.backend.exception.ResourceNotAllowedToDeleteException;
 import com.libraryManagement.backend.service.iBookService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -46,11 +45,7 @@ public class BooksRestController {
     public ResponseEntity<?> findByCategoryName(@PathVariable String categoryName) {
         List<BooksOutDto> booksOutDtoList = bookService.findByCategoryName(categoryName);
 
-        if (booksOutDtoList.isEmpty()) {
-            return ResponseEntity.status(404).body(new ApiResponse(HttpStatus.NOT_FOUND, "Category not found."));
-        } else {
-            return ResponseEntity.ok(booksOutDtoList);
-        }
+        return ResponseEntity.ok(booksOutDtoList);
     }
 
     @GetMapping("/id/{bookId}")
@@ -77,7 +72,7 @@ public class BooksRestController {
     @PostMapping("")
     public ResponseEntity<?> addBook(@RequestBody BooksInDto booksInDto) {
         Books books = bookService.save(booksInDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(HttpStatus.CREATED, "Book added successfully!"));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(HttpStatus.CREATED, "Book added successfully."));
     }
 
     @PutMapping("/id/{bookId}")
@@ -88,22 +83,7 @@ public class BooksRestController {
 
     @DeleteMapping("/id/{bookId}")
     public ResponseEntity<?> removeBook(@PathVariable int bookId) {
-            if (bookService.isBookIssued(bookId)) {
-                throw new ResourceNotAllowedToDeleteException("Book cannot be deleted as it is currently issued.");
-            }
-            BooksOutDto booksOutDto = bookService.findById(bookId);
             bookService.deleteById(bookId);
-            return ResponseEntity.ok(new ApiResponse(HttpStatus.OK,"Book deleted successfully."));
-
-    }
-
-    @DeleteMapping("/title/{bookTitle}")
-    public ResponseEntity<?> deleteByBookTitle(@PathVariable String bookTitle) {
-        BooksOutDto booksOutDto = bookService.findByBookTitle(bookTitle);
-            if (bookService.isBookIssued(booksOutDto.getBookId())) {
-                throw new ResourceNotAllowedToDeleteException("Book cannot be deleted as it is currently issued.");
-            }
-        bookService.deleteByBookTitle(bookTitle);
             return ResponseEntity.ok(new ApiResponse(HttpStatus.OK,"Book deleted successfully."));
     }
 

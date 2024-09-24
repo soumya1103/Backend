@@ -6,6 +6,7 @@ import com.libraryManagement.backend.entity.Books;
 import com.libraryManagement.backend.entity.Categories;
 import com.libraryManagement.backend.exception.ResourceAlreadyExistsException;
 import com.libraryManagement.backend.exception.ResourceNotAllowedToDeleteException;
+import com.libraryManagement.backend.exception.ResourceNotFoundException;
 import com.libraryManagement.backend.mapper.CategoriesMapper;
 import com.libraryManagement.backend.repository.BooksRepository;
 import com.libraryManagement.backend.repository.CategoriesRepository;
@@ -32,21 +33,30 @@ public class CategoriesServiceImpl implements iCategoriesService {
     private IssuancesRepository issuancesRepository;
 
     @Override
-    public Page<CategoriesOutDto> getCategories(Pageable pageable) {
+    public Page<CategoriesOutDto> getCategories(String keyword, Pageable pageable) {
         Page<Categories> categoryPage;
-        categoryPage = categoriesRepository.findAll(pageable);
+
+        if (keyword != null && !keyword.isEmpty()) {
+            categoryPage = categoriesRepository.findByCategoryNameContainingIgnoreCase(keyword, pageable);
+        } else {
+            categoryPage = categoriesRepository.findAll(pageable);
+        }
 
         return categoryPage.map(CategoriesMapper::mapToCategoriesDto);
     }
 
     @Override
     public Categories findByCategoryNameIgnoreCase(String categoryName) {
-        return categoriesRepository.findByCategoryNameIgnoreCase(categoryName);
+        Categories categories = categoriesRepository.findByCategoryNameIgnoreCase(categoryName);
+        if (categories == null) {
+            throw new ResourceNotFoundException("Category not found.");
+        }
+        return categories;
     }
 
     public CategoriesOutDto findById(int categoryId) {
         Categories categories = categoriesRepository.findById(categoryId)
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found."));
 
         CategoriesOutDto categoriesOutDto = CategoriesMapper.mapToCategoriesDto(categories);
 
@@ -68,19 +78,20 @@ public class CategoriesServiceImpl implements iCategoriesService {
 
 
     @Override
-    public CategoriesOutDto updateCategory(CategoriesInDto categoriesInDto) {
+    public CategoriesOutDto updateCategory(int categoryId, CategoriesInDto categoriesInDto) {
         Optional<Categories> categoriesOptional = categoriesRepository.findById(categoriesInDto.getCategoryId());
 
         if(!categoriesOptional.isPresent()) {
-            throw new RuntimeException("Category not found");
+            throw new ResourceNotFoundException("Category not found.");
         }
 
         Categories categoryToUpdate = categoriesOptional.get();
 
-        if (categoriesInDto.getCategoryName() != null && !categoriesInDto.getCategoryName().isEmpty()) {
+        if (categoriesInDto.getCategoryName() != null) {
             Categories existingCategory = categoriesRepository.findByCategoryNameIgnoreCase(categoriesInDto.getCategoryName());
 
-            if (existingCategory != null) {
+            if ((existingCategory != null) && (existingCategory.getCategoryId() != categoriesInDto.getCategoryId()) &&
+                    (existingCategory.getCategoryId() != categoryId)) {
                 throw new ResourceAlreadyExistsException("Duplicate entry.");
             }
             categoryToUpdate.setCategoryName(categoriesInDto.getCategoryName());
@@ -102,7 +113,7 @@ public class CategoriesServiceImpl implements iCategoriesService {
     @Override
     public void deleteById(int categoryId) {
         Categories category = categoriesRepository.findById(categoryId)
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found."));
 
         List<Books> booksInCategory = booksRepository.findByCategoryName(category.getCategoryName());
 

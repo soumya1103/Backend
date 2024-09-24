@@ -30,8 +30,9 @@ public interface IssuancesRepository extends JpaRepository<Issuances, Integer> {
     @Query("SELECT i FROM Issuances i WHERE i.books.bookId = :bookId")
     List<Issuances> findByBookId(int bookId);
 
-    @Query("SELECT i FROM Issuances i WHERE i.users.userCredential LIKE :keyword OR i.books.bookTitle LIKE :keyword")
-    List<Issuances> findByUserCredentialOrBookTitleContaining(@Param("keyword") String keyword);
+    @Query("SELECT i FROM Issuances i WHERE i.users.userCredential LIKE :keyword OR i.books.bookTitle LIKE :keyword " +
+            "OR i.users.userName LIKE :keyword OR i.status LIKE :keyword OR i.issuanceType LIKE :keyword")
+    List<Issuances> findByUserCredentialOrBookTitleOrUserNameOrStatusOrIssuanceTypeContaining(@Param("keyword") String keyword);
 
     boolean existsByBooksBookIdAndStatus(int bookId, String status);
 

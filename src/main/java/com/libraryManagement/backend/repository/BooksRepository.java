@@ -25,8 +25,8 @@ public interface BooksRepository extends JpaRepository<Books, Integer> {
 
     void deleteByBookTitle(String bookTitle);
 
-    @Query("SELECT b from Books b WHERE b.bookTitle LIKE :keyword OR b.bookAuthor LIKE :keyword")
-    List<Books> findByBookTitleOrBookAuthorContaining(@Param("keyword") String keywords);
+    @Query("SELECT b FROM Books b JOIN b.categoryId c WHERE b.bookTitle LIKE :keyword OR b.bookAuthor LIKE :keyword OR c.categoryName LIKE :keyword")
+    List<Books> findByBookTitleOrBookAuthorOrCategoryNameContaining(@Param("keyword") String keywords);
 
     Books findByBookTitleIgnoreCase(String bookTitle);
 }

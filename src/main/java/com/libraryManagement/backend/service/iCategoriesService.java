@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface iCategoriesService {
 
-    Page<CategoriesOutDto> getCategories(Pageable pageable);
+    Page<CategoriesOutDto> getCategories(String keyword, Pageable pageable);
 
     Categories findByCategoryNameIgnoreCase(String categoryName);
 
@@ -18,7 +18,7 @@ public interface iCategoriesService {
 
     Categories save(Categories categories);
 
-    CategoriesOutDto updateCategory(CategoriesInDto categoriesInDto);
+    CategoriesOutDto updateCategory(int categoryId, CategoriesInDto categoriesInDto);
 
     void deleteById(int categoryId);
 
