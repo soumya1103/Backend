@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,7 +44,7 @@ public class UserServiceImpl implements iUserService {
 
     private final iTwilioService twilioService;
 
-    private iIssuancesService issuancesService;
+    private final iIssuancesService issuancesService;
 
     @Override
     public Page<UsersOutDto> getUsersByRole(Pageable pageable, String role) {
@@ -131,7 +132,10 @@ public class UserServiceImpl implements iUserService {
         }
 
         if (usersInDto.getPassword() != null && !usersInDto.getPassword().isEmpty()) {
-            userToUpdate.setPassword(usersInDto.getPassword());
+            byte[] decodedBytes = Base64.getDecoder().decode(usersInDto.getPassword());
+            String decodedPassword = new String(decodedBytes);
+            String encryptedPassword = bCryptPasswordEncoder.encode(decodedPassword);
+            userToUpdate.setPassword("{bcrypt}" + encryptedPassword);
         }
 
         Users updatedUser = usersRepository.save(userToUpdate);
@@ -149,7 +153,7 @@ public class UserServiceImpl implements iUserService {
         List<IssuancesOutDto> userIssuances = issuancesService.findByUserId(id);
         boolean hasIssuedBooks = userIssuances.stream()
                 .anyMatch(issuance -> "Issued".equalsIgnoreCase(issuance.getStatus()));
-
+        System.out.println(hasIssuedBooks);
         if (hasIssuedBooks) {
             throw new ResourceNotAllowedToDeleteException("User cannot be deleted because they have issued books.");
         }

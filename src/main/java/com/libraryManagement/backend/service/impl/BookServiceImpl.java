@@ -134,6 +134,12 @@ public class BookServiceImpl implements iBookService {
             existingBook.setBookCount(booksInDto.getBookCount());
         }
 
+        if (booksInDto.getCategoryId() != null) {
+            Categories category = categoriesRepository.findById(booksInDto.getCategoryId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Category not found."));
+            existingBook.setCategoryId(category);
+        }
+
         Books updatedBook = booksRepository.save(existingBook);
 
         return BooksMapper.mapToBooksDto(updatedBook);

@@ -60,6 +60,7 @@ public class ProjectSecurityConfig {
 
 //                User routes
                         .requestMatchers(  "/lms/users/credential/{userCredential}").authenticated()
+                        .requestMatchers(  "/lms/users/id/{userId}").authenticated()
                         .requestMatchers(  "/lms/users/**").hasRole("ADMIN")
 //                Issuance routes
                         .requestMatchers("/lms/issuance/user/{userCredential}").authenticated()
